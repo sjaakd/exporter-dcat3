@@ -1,0 +1,7 @@
+target
+venv
+.flattened-pom.xml
+release.properties
+pom.xml.releaseBackup
+.vscode
+.idea
