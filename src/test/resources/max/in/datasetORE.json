@@ -87,6 +87,7 @@
     "schema:isPartOf": {
       "schema:name": "Philip Durbin Dataverse",
       "@id": "https://beta.dataverse.org/dataverse/pdurbin",
+      "schema:description": "A sub dataverse.",
       "schema:isPartOf": {
         "schema:name": "Root",
         "@id": "https://beta.dataverse.org/dataverse/root",
