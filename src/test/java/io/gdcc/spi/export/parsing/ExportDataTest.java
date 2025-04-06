@@ -11,6 +11,7 @@ class ExportDataTest {
     void testMaxSetParsesCorrectly() {
 
         ExportDataProvider exportDataProvider = getExportDataProvider(  "src/test/resources/max/in" );
-        ExportData.builder().provider( exportDataProvider ).build();
+        ExportData exportData = ExportData.builder().provider( exportDataProvider ).build();
+        System.out.printf( "" );
     }
 }

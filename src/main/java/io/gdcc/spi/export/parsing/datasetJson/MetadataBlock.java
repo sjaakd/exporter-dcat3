@@ -2,7 +2,7 @@ package io.gdcc.spi.export.parsing.datasetJson;
 
 import java.util.List;
 
-public record Citation(
+public record MetadataBlock(
 
     String displayName,
     String name,
