@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -74,13 +75,15 @@ public class ExportData {
         }
 
         public ExportData build() {
-            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectMapper jsonMapper = new ObjectMapper();
+            jsonMapper.configure( DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false );
+            XmlMapper xmlMapper = new XmlMapper();
+            xmlMapper.configure( DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false );
             try {
-                DatasetJson datasetJson = objectMapper.readValue( provider.getDatasetJson().toString(), DatasetJson.class );
-                DatasetORE datasetORE = objectMapper.readValue( provider.getDatasetORE().toString(), DatasetORE.class );
-                List<DatasetFileDetail> datasetFileDetails = objectMapper.readValue( provider.getDatasetFileDetails().toString(), new TypeReference<>() { } );
-                DatasetSchemaDotOrg datasetSchemaDotOrg = objectMapper.readValue( provider.getDatasetSchemaDotOrg().toString(), DatasetSchemaDotOrg.class );
-                XmlMapper xmlMapper = new XmlMapper();
+                DatasetJson datasetJson = jsonMapper.readValue( provider.getDatasetJson().toString(), DatasetJson.class );
+                DatasetORE datasetORE = jsonMapper.readValue( provider.getDatasetORE().toString(), DatasetORE.class );
+                List<DatasetFileDetail> datasetFileDetails = jsonMapper.readValue( provider.getDatasetFileDetails().toString(), new TypeReference<>() { } );
+                DatasetSchemaDotOrg datasetSchemaDotOrg = jsonMapper.readValue( provider.getDatasetSchemaDotOrg().toString(), DatasetSchemaDotOrg.class );
                 DataCiteXml dataCiteXml = xmlMapper.readValue( provider.getDataCiteXml(), DataCiteXml.class );
                 return new ExportData( datasetJson, datasetORE, datasetFileDetails, datasetSchemaDotOrg, dataCiteXml );
             }

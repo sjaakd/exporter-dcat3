@@ -20,6 +20,7 @@ public record DatasetVersion(
     List<File> files,
     String datasetPersistentId,
     int versionMinorNumber,
+    long internalVersionNumber,
     Map<String, MetadataBlock> metadataBlocks,
     String publicationDate,
     String lastUpdateTime

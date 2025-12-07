@@ -2,6 +2,7 @@ package io.gdcc.spi.export.parsing.dataCiteXml;
 
 public class Creator {
     private String creatorName;
+    private String givenName;
     private NameIdentifier nameIdentifier;
     private String affiliation;
 
@@ -11,6 +12,14 @@ public class Creator {
 
     public void setCreatorName(String creatorName) {
         this.creatorName = creatorName;
+    }
+
+    public String getGivenName() {
+        return givenName;
+    }
+
+    public void setGivenName(String givenName) {
+        this.givenName = givenName;
     }
 
     public NameIdentifier getNameIdentifier() {

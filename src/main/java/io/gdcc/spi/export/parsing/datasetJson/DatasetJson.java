@@ -4,14 +4,14 @@ public record DatasetJson(
 
     int id,
     String identifier,
+    String persistentUrl,
     String protocol,
-    DatasetVersion datasetVersion,
-    String storageIdentifier,
     String authority,
-    String publisher,
-    String datasetType,
     String separator,
+    String publisher,
     String publicationDate,
-    String persistentUrl
+    String storageIdentifier,
+    String datasetType,
+    DatasetVersion datasetVersion
 ) {
 }

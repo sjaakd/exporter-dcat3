@@ -3,6 +3,8 @@ package io.gdcc.spi.export.dcat3;
 import java.io.OutputStream;
 import java.util.Locale;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auto.service.AutoService;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
@@ -32,6 +34,7 @@ public class Dcat3Exporter implements Exporter {
      */
     @Override
     public String getFormatName() {
+        System.out.println( "Sjaak: DCAT-3 Exporter getFormatName called!");
         return "dcat3";
     }
 
@@ -45,6 +48,7 @@ public class Dcat3Exporter implements Exporter {
         // This example includes the language in the name to demonstrate that locale is
         // available. A production exporter would instead use the locale to generate an
         // appropriate translation.
+        System.out.println("Sjaak: DCAT-3 Exporter getDisplayName called!");
         return "DCAT-3";
     }
 
@@ -61,6 +65,7 @@ public class Dcat3Exporter implements Exporter {
      */
     @Override
     public Boolean isAvailableToUsers() {
+        System.out.println("Sjaak: DCAT-3 Exporter isAvailableToUsers called!");
         return true;
     }
 
@@ -70,6 +75,7 @@ public class Dcat3Exporter implements Exporter {
      */
     @Override
     public String getMediaType() {
+        System.out.println("Sjaak: DCAT-3 Exporter getMediaType called!");
         return " application/rdf+xml";
     }
 
@@ -80,7 +86,20 @@ public class Dcat3Exporter implements Exporter {
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
 
+        System.out.println("Sjaak: DCAT-3 Exporter exportDataset called!");
         ExportData exportData = ExportData.builder().provider( dataProvider ).build();
+
+        // temp debug output
+        ObjectMapper mapper = new ObjectMapper();
+        String json = null;
+        try {
+            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
+            System.out.println(json);
+        }
+        catch ( JsonProcessingException e ) {
+            throw new RuntimeException( e );
+        }
+
         Model model = ModelFactory.createDefaultModel();
 
         String exampleMS = "http://example.org/resource/";
@@ -105,7 +124,7 @@ public class Dcat3Exporter implements Exporter {
         catalog.addProperty( DCAT.dataset, dataset );
 
         // Write the model to the console
-        model.write( System.out, "TURTLE" );
+        model.write( outputStream, "TURTLE" );
     }
 
     private Resource createCatalog(Model model, SchemaIsPartOf schemaIsPartOf, String exampleMS) {

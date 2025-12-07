@@ -55,18 +55,16 @@
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
-    <jena-core.version>4.5.0</jena-core.version>
+    <jena-core.version>4.8.0</jena-core.version>
     <jackson-dataformat-xml.version>2.13.1</jackson-dataformat-xml.version>  <!-- Check for alignment with Jena -->
     <woodstox-core.version>7.1.0</woodstox-core.version>
     <commons-text.version>1.13.0</commons-text.version>
+    <libthrift.version>0.22.0</libthrift.version>
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-text</artifactId>
-      <version>${commons-text.version}</version>
-    </dependency>
+
+    <!-- jena and dependencies -->
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-core</artifactId>
@@ -82,6 +80,17 @@
       <artifactId>jena-iri</artifactId>
       <version>${jena-core.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-shaded-guava</artifactId>
+      <version>${jena-core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.thrift</groupId>
+      <artifactId>libthrift</artifactId>
+      <version>${libthrift.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-xml</artifactId>
@@ -152,6 +161,69 @@
           </pom>
         </configuration>
       </plugin>
+
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.6.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <artifactSet>
+                <includes>
+                  <include>org.apache.jena:jena-arq</include>
+                  <include>org.apache.jena:jena-core</include>
+                  <include>org.apache.jena:jena-base</include>
+                  <include>org.apache.jena:jena-iri</include>
+                  <include>org.apache.jena:jena-shaded-guava</include>
+
+                  <include>org.apache.thrift:libthrift</include>
+                </includes>
+              </artifactSet>
+
+              <!-- Relocate Jena and Guava to private namespaces -->
+              <relocations>
+                <relocation>
+                  <pattern>org.apache.jena</pattern>
+                  <shadedPattern>dcat3.shaded.org.apache.jena</shadedPattern>
+                </relocation>
+                <!-- IMPORTANT: Do NOT relocate org.apache.thrift -->
+              </relocations>
+
+              <!-- Merge service descriptors / MANIFEST -->
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+              </transformers>
+
+              <!-- Clean up signatures that can cause classloading issues -->
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <exclude>META-INF/LICENSE</exclude>
+                    <exclude>META-INF/NOTICE</exclude>
+                    <exclude>META-INF/DEPENDENCIES</exclude>
+                    <exclude>META-INF/MANIFEST.MF</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+
+              <!-- Optional helpers -->
+              <minimizeJar>false</minimizeJar>
+              <createDependencyReducedPom>true</createDependencyReducedPom>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 
