@@ -390,7 +390,57 @@ When producing a single deployable JAR for Dataverse:
 
 ***
 
-## 6) References
+## 6) Custom MicroProfile ConfigSource
+
+Implement a ConfigSourceProvider that looks for config.properties in the same directory as the JAR.
+Register it via META-INF/services/org.eclipse.microprofile.config.spi.ConfigSourceProvider so MicroProfile picks it up automatically.
+This requires no JVM flags and works in Payara/Dataverse because MicroProfile Config uses ServiceLoader for extensions.
+
+Conditional tracing via config
+
+Add a property like dcat.trace.enabled=true and optionally dcat.trace.level=debug.
+In your exporter, check this property before logging or dumping ExportData JSON.
+Example:
+```java
+  boolean trace = sr.getOptionalValue("dcat.trace.enabled", Boolean.class)
+                      .orElse(false);
+  if (trace) {  
+      System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
+  }
+```
+This way, ops can turn tracing on/off by editing the config file next to the JAR—no code changes, no redeploy.
+
+Everything else stays the same
+
+Use @ConfigMapping for DCAT field mappings.
+Use dcat.output.format for serialization (Turtle/RDF/XML/JSON-LD).
+Use dcat.ns.* for prefixes.
+All values come from the same external file.
+
+Why this is “no-code” for ops
+
+They download your JAR and drop a config.properties file in the same folder.
+Restart Dataverse → exporter picks up config automatically.
+No JVM flags, no environment tweaks, no classpath hacks.
+
+
+Example config.properties next to JAR
+```properties
+
+# Output format
+dcat.output.format=turtle
+dcat.trace.enabled=true
+
+# Catalog mapping
+dcat.catalog.uri=https://example.org/catalog
+dcat.catalog.title.pointer=/datasetORE/oreDescribes/schemaIsPartOf/schemaName
+dcat.catalog.title.lang=nl
+# ...
+```
+
+***
+
+## 7) References
 
 *   **Dataverse Exporter SPI & external exporters**: *Metadata Export Formats* and *Admin Guide* (automatic exports, batch exports). [\[youtube.com\]](https://www.youtube.com/watch?v=nxnMvBkoS0k), [\[github.com\]](https://github.com/quarkusio/quarkus/discussions/38522)
 *   **MicroProfile Config** (sources & precedence) and SmallRye `@ConfigMapping`. [\[guides.dataverse.org\]](https://guides.dataverse.org/en/4.20/admin/metadatacustomization.html), [\[365tno-my....epoint.com\]](https://365tno-my.sharepoint.com/personal/sjaak_derksen_tno_nl/Documents/Microsoft%20Copilot%20Chat%20Files/GDN-orig.tsv)
@@ -399,9 +449,9 @@ When producing a single deployable JAR for Dataverse:
 
 ***
 
-## 7) Checklist
+## 8) Checklist
 
-*   [ ] Add `DcatConfig` and `DcatMappingEngine`.
+*   [ ] Add `DcatConfig` and `DcatMappingEngine`. See also $6
 *   [ ] Implement `DcatOutput` enum and use it in `getMediaType()` + `model.write(...)`.
 *   [ ] Provide `META‑INF/microprofile-config.properties` with defaults; document overrides.
 *   [ ] Package with Shade (services merged); drop JAR into Dataverse external exporters location; restart Payara.
