@@ -8,6 +8,8 @@ work is not finalized. Checkout the config directory.
 
 It is all very much work in progress. The idea is to make the exporter fully configurable by means of a micro profile in which you can specify a mapping from the ExportData object to DCAT3 fields and also specify the kind of DCAT to produce. Apache Jena is used to create the RDF output. Shading was an issue. 
 
+Ideas are sketched here: [Ideas](IDEAS.md)
+
 ## Installation
 
 Please note: the DCAT3 exporter works best with Dataverse 6.2 and higher (where it updates the content of `<head>` as described in the [guides](https://preview.guides.gdcc.io/en/develop/admin/discoverability.html#schema-org-json-ld-DCAT3-metadata)) but can be used with 6.0 and higher (to get the export functionality).
