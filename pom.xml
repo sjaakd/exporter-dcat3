@@ -60,6 +60,7 @@
     <woodstox-core.version>7.1.0</woodstox-core.version>
     <commons-text.version>1.13.0</commons-text.version>
     <libthrift.version>0.22.0</libthrift.version>
+    <smallrye-config.version>3.14.1</smallrye-config.version>
   </properties>
 
   <dependencies>
@@ -89,6 +90,12 @@
       <groupId>org.apache.thrift</groupId>
       <artifactId>libthrift</artifactId>
       <version>${libthrift.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.smallrye.config</groupId>
+      <artifactId>smallrye-config</artifactId>
+      <version>${smallrye-config.version}</version>
     </dependency>
 
     <dependency>
@@ -183,6 +190,9 @@
                   <include>org.apache.jena:jena-shaded-guava</include>
 
                   <include>org.apache.thrift:libthrift</include>
+
+                  <include>io.smallrye.common:*</include>
+                  <include>io.smallrye.config:*</include>
                 </includes>
               </artifactSet>
 
@@ -192,7 +202,12 @@
                   <pattern>org.apache.jena</pattern>
                   <shadedPattern>dcat3.shaded.org.apache.jena</shadedPattern>
                 </relocation>
-                <!-- IMPORTANT: Do NOT relocate org.apache.thrift -->
+                <relocation>
+                  <pattern>io.smallrye</pattern>
+                  <shadedPattern>dcat3.shaded.io.smallrye</shadedPattern>
+                </relocation>
+
+                <!-- IMPORTANT: Do NOT relocate org.apache.thrift or eclipse microprofile config -->
               </relocations>
 
               <!-- Merge service descriptors / MANIFEST -->
@@ -212,7 +227,10 @@
                     <exclude>META-INF/NOTICE</exclude>
                     <exclude>META-INF/DEPENDENCIES</exclude>
                     <exclude>META-INF/MANIFEST.MF</exclude>
-                  </excludes>
+                    <exclude>META-INF/services/org.eclipse.microprofile.config.spi.ConfigProviderResolver</exclude>
+                    <exclude>META-INF/services/org.eclipse.microprofile.config.spi.ConfigSourceProvider</exclude>
+                    <exclude>META-INF/services/org.eclipse.microprofile.config.spi.Converter</exclude>
+                </excludes>
                 </filter>
               </filters>
 

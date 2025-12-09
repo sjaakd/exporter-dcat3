@@ -1,18 +1,26 @@
 package io.gdcc.spi.export.dcat3;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Locale;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auto.service.AutoService;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.dcat3.config.MappingModel;
+import io.gdcc.spi.export.dcat3.config.PropertiesMappingLoader;
+import io.gdcc.spi.export.dcat3.mapping.CatalogMapper;
 import io.gdcc.spi.export.parsing.ExportData;
 import io.gdcc.spi.export.parsing.datasetORE.SchemaIsPartOf;
+import io.smallrye.config.SmallRyeConfig;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCAT;
@@ -26,6 +34,47 @@ public class Dcat3Exporter implements Exporter {
     public static final String NL = "nl";
     public static final String EN = "en";
 
+    private final SmallRyeConfig cfg;
+    private final DcatConfig mapping;
+
+    // Simple enum for format → writer + media type
+    enum DcatOutput {
+        TURTLE( "TURTLE", "text/turtle" ), RDFXML( "RDF/XML", "application/rdf+xml" ), JSONLD( "JSON-LD", "application/ld+json" );
+
+        final String jenaSyntax;
+        final String mediaType;
+
+        DcatOutput(String s, String m) {
+            this.jenaSyntax = s;
+            this.mediaType = m;
+        }
+
+        static DcatOutput from(String v) {
+            if ( v == null ) {
+                return TURTLE;
+            }
+            switch ( v.toLowerCase() ) {
+                case "rdfxml":
+                    return RDFXML;
+                case "jsonld":
+                    return JSONLD;
+                default:
+                    return TURTLE;
+            }
+        }
+    }
+
+    public Dcat3Exporter() {
+        this.cfg = LocalConfig.build( Dcat3Exporter.class, DcatConfig.class );
+        this.mapping = cfg.getConfigMapping( DcatConfig.class );
+
+        // Optional: print a one‑line banner if tracing is enabled
+        boolean trace = cfg.getOptionalValue( "dcat.trace.enabled", Boolean.class ).orElse( false );
+        if ( trace ) {
+            System.out.println( "[DCAT3] Tracing enabled (config.properties found next to JAR)." );
+        }
+    }
+
     /*
      * The name of the format it creates. If this format is already provided by a
      * built-in exporter, this Exporter will override the built-in one. (Note that
@@ -34,7 +83,6 @@ public class Dcat3Exporter implements Exporter {
      */
     @Override
     public String getFormatName() {
-        System.out.println( "Sjaak: DCAT-3 Exporter getFormatName called!");
         return "dcat3";
     }
 
@@ -48,7 +96,6 @@ public class Dcat3Exporter implements Exporter {
         // This example includes the language in the name to demonstrate that locale is
         // available. A production exporter would instead use the locale to generate an
         // appropriate translation.
-        System.out.println("Sjaak: DCAT-3 Exporter getDisplayName called!");
         return "DCAT-3";
     }
 
@@ -65,7 +112,7 @@ public class Dcat3Exporter implements Exporter {
      */
     @Override
     public Boolean isAvailableToUsers() {
-        System.out.println("Sjaak: DCAT-3 Exporter isAvailableToUsers called!");
+        System.out.println( "Sjaak: DCAT-3 Exporter isAvailableToUsers called!" );
         return true;
     }
 
@@ -75,58 +122,107 @@ public class Dcat3Exporter implements Exporter {
      */
     @Override
     public String getMediaType() {
-        System.out.println("Sjaak: DCAT-3 Exporter getMediaType called!");
+        System.out.println( "Sjaak: DCAT-3 Exporter getMediaType called!" );
+        //        String fmt = cfg.getOptionalValue("dcat.output.format", String.class).orElse("turtle");
+        //        return DcatOutput.from(fmt).mediaType;
         return " application/rdf+xml";
+    }
+
+    @Override
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
+        try {
+            ExportData exportData = ExportData.builder().provider( dataProvider ).build();
+
+            // Serialize ExportData back to JSON tree for mapping lookups
+            ObjectMapper mapper = new ObjectMapper();
+            byte[] jsonBytes = mapper.writeValueAsBytes( exportData );
+            JsonNode root = mapper.readTree( jsonBytes );
+
+            // Load catalog mapping from classpath or external file
+            MappingModel.Config mapping = loadCatalogMapping( "dcat-catalog.properties" );
+
+            // Build the model from mapping + JSON
+            CatalogMapper cm = new CatalogMapper( mapping );
+            Model model = cm.build( root );
+
+            // Write (use TURTLE/RDFXML/JSON-LD as you prefer)
+            model.write( outputStream, "TURTLE" );
+        }
+        catch ( Exception e ) {
+            throw new ExportException( "Failed to export DCAT-3 catalog", e );
+        }
+    }
+
+    private MappingModel.Config loadCatalogMapping(String resourceName) throws Exception {
+        try (InputStream in = locate( resourceName )) {
+            if ( in == null ) {
+                throw new FileNotFoundException( resourceName + " not found" );
+            }
+            return new PropertiesMappingLoader().load( in );
+        }
+    }
+
+    private InputStream locate(String name) throws IOException {
+        // 1) next to JAR (if you run as a fat jar)
+        File f = new File( name );
+        if ( f.exists() ) {
+            return new FileInputStream( f );
+        }
+        // 2) classpath
+        InputStream cp = Thread.currentThread().getContextClassLoader().getResourceAsStream( name );
+        if ( cp != null ) {
+            return cp;
+        }
+        return Dcat3Exporter.class.getResourceAsStream( "/" + name );
     }
 
     /**
      * This method is called by Dataverse when metadata for a given dataset in this format is
      * requested.
      */
-    @Override
-    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
-
-        System.out.println("Sjaak: DCAT-3 Exporter exportDataset called!");
-        ExportData exportData = ExportData.builder().provider( dataProvider ).build();
-
-        // temp debug output
-        ObjectMapper mapper = new ObjectMapper();
-        String json = null;
-        try {
-            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
-            System.out.println(json);
-        }
-        catch ( JsonProcessingException e ) {
-            throw new RuntimeException( e );
-        }
-
-        Model model = ModelFactory.createDefaultModel();
-
-        String exampleMS = "http://example.org/resource/";
-
-        // Add prefixes to the model
-        model.setNsPrefix( "dcat", DCAT.NS );
-        model.setNsPrefix( "dct", DCTerms.NS );
-        model.setNsPrefix( "vcard", VCARD.uri );
-        model.setNsPrefix( "foaf", FOAF.NS );
-        model.setNsPrefix( "exampleMS", exampleMS );
-
-        // Create a catalog
-        Resource catalog = createCatalog( model, exportData.getDatasetORE().oreDescribes().schemaIsPartOf(), exampleMS );
-
-        // Create a dataset
-        Resource dataset = model.createResource( exampleMS )
-                                .addProperty( RDF.type, DCAT.Dataset )
-                                .addProperty( DCTerms.title, "Example Dataset" )
-                                .addProperty( DCTerms.description, "This is an example dataset." );
-
-        // Add the dataset to the catalog
-        catalog.addProperty( DCAT.dataset, dataset );
-
-        // Write the model to the console
-        model.write( outputStream, "TURTLE" );
-    }
-
+    //    @Override
+    //    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
+    //
+    //        System.out.println("Sjaak: DCAT-3 Exporter exportDataset called!");
+    //        ExportData exportData = ExportData.builder().provider( dataProvider ).build();
+    //
+    //        // temp debug output
+    //        ObjectMapper mapper = new ObjectMapper();
+    //        String json = null;
+    //        try {
+    //            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
+    //            System.out.println(json);
+    //        }
+    //        catch ( JsonProcessingException e ) {
+    //            throw new RuntimeException( e );
+    //        }
+    //
+    //        Model model = ModelFactory.createDefaultModel();
+    //
+    //        String exampleMS = "http://example.org/resource/";
+    //
+    //        // Add prefixes to the model
+    //        model.setNsPrefix( "dcat", DCAT.NS );
+    //        model.setNsPrefix( "dct", DCTerms.NS );
+    //        model.setNsPrefix( "vcard", VCARD.uri );
+    //        model.setNsPrefix( "foaf", FOAF.NS );
+    //        model.setNsPrefix( "exampleMS", exampleMS );
+    //
+    //        // Create a catalog
+    //        Resource catalog = createCatalog( model, exportData.getDatasetORE().oreDescribes().schemaIsPartOf(), exampleMS );
+    //
+    //        // Create a dataset
+    //        Resource dataset = model.createResource( exampleMS )
+    //                                .addProperty( RDF.type, DCAT.Dataset )
+    //                                .addProperty( DCTerms.title, "Example Dataset" )
+    //                                .addProperty( DCTerms.description, "This is an example dataset." );
+    //
+    //        // Add the dataset to the catalog
+    //        catalog.addProperty( DCAT.dataset, dataset );
+    //
+    //        // Write the model to the console
+    //        model.write( outputStream, "TURTLE" );
+    //    }
     private Resource createCatalog(Model model, SchemaIsPartOf schemaIsPartOf, String exampleMS) {
 
         // Create the catalog. TODO: origin of this data is dubious.
@@ -136,9 +232,7 @@ public class Dcat3Exporter implements Exporter {
                                 .addProperty( DCTerms.description, model.createLiteral( schemaIsPartOf.schemaDescription(), NL ) );
 
         // Create the contact point. TODO: where to get the data from?
-        Resource contactPoint = model.createResource()
-                                     .addProperty( RDF.type, VCARD.AGENT )
-                                     .addProperty( VCARD.FN, model.createLiteral( "Geologische Dienst Nederland", NL ) )
+        Resource contactPoint = model.createResource().addProperty( RDF.type, VCARD.AGENT ).addProperty( VCARD.FN, model.createLiteral( "Geologische Dienst Nederland", NL ) )
                                      .addProperty( VCARD.FN, model.createLiteral( "Geological Survey of the Netherlands", EN ) )
                                      .addProperty( VCARD.EMAIL, model.createResource( "mailto:support@geologischedienst.nl" ) )
                                      .addProperty( VCARD.ORG, model.createResource( "https://www.geologischedienst.nl/" ) )
@@ -148,9 +242,7 @@ public class Dcat3Exporter implements Exporter {
         catalog.addProperty( DCAT.contactPoint, contactPoint );
 
         // Create the publisher. TODO: where to get the data from?
-        Resource publisher = model.createResource()
-                                  .addProperty( RDF.type, FOAF.Agent )
-                                  .addProperty( DCTerms.type, model.createResource( "https://ror.org/01bnjb948" ) )
+        Resource publisher = model.createResource().addProperty( RDF.type, FOAF.Agent ).addProperty( DCTerms.type, model.createResource( "https://ror.org/01bnjb948" ) )
                                   .addProperty( FOAF.name, model.createLiteral( "Nederlandse Organisatie voor Toegepast Natuurwetenschappelijk Onderzoek (nl), TNO", NL ) )
                                   .addProperty( FOAF.name, model.createLiteral( "Netherlands Organisation for Applied Scientific Research", EN ) );
 
