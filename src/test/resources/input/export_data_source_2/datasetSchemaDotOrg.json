@@ -1,0 +1,19 @@
+
+{
+  "@context": "https://schema.org/",
+  "@type": "Dataset",
+  "name": "GDN – Test dataset for DCAT-AP-NL mapping",
+  "description": "A realistic test dataset for GDN to validate DCAT-AP-NL and internal export mappings.",
+  "identifier": "https://doi.org/10.FAKE/TESTLZSVMZ",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Root"
+  },
+  "creator": {
+    "@type": "Organization",
+    "name": "Geologische Dienst Nederland (TNO)"
+  },
+  "datePublished": "2025-12-07",
+  "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "keywords": ["GDN", "DCAT-AP-NL", "catalog", "test"]
+}

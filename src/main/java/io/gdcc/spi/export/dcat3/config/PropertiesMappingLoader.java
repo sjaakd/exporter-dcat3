@@ -16,11 +16,6 @@ public class PropertiesMappingLoader {
 
         MappingModel.Config cfg = new MappingModel.Config();
 
-        // Prefixes
-        p.stringPropertyNames().stream()
-         .filter(k -> k.startsWith("prefix."))
-         .forEach(k -> cfg.prefixes.put(k.substring("prefix.".length()), p.getProperty(k)));
-
         // Subject
         cfg.subject.iriConst    = p.getProperty("subject.iri.const");
         cfg.subject.iriTemplate = p.getProperty("subject.iri.template");

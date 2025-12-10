@@ -1,8 +1,7 @@
 package io.gdcc.spi.export.dcat3.config;
 
-
-
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class MappingModel {
     public static class Subject {
@@ -21,7 +20,7 @@ public class MappingModel {
         public String nodeRef;        // node id (for node-ref)
         public boolean multi = false; // expand arrays or split by comma
         public String when;           // optional guard expression (future)
-        public Map<String,String> map = new LinkedHashMap<>(); // value mapping
+        public Map<String, String> map = new LinkedHashMap<>(); // value mapping
     }
 
     public static class NodeTemplate {
@@ -34,8 +33,7 @@ public class MappingModel {
 
     public static class Config {
         public Subject subject = new Subject();
-        public Map<String,String> prefixes = new LinkedHashMap<>();
-        public Map<String,ValueSource> props = new LinkedHashMap<>();
-        public Map<String,NodeTemplate> nodes = new LinkedHashMap<>();
+        public Map<String, ValueSource> props = new LinkedHashMap<>();
+        public Map<String, NodeTemplate> nodes = new LinkedHashMap<>();
     }
 }

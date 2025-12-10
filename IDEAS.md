@@ -1,459 +1,209 @@
-# DCAT Exporter — Configuration-Driven Mapping & Serialization (Dataverse)
+# DCAT‑3 Exporter (PoC) — Approach, Rationale & Next Steps
 
-This document explains how to make your Dataverse DCAT exporter:
-
-1. **Externally configurable** for field mappings using MicroProfile/SmallRye Config (`@ConfigMapping`), and  
-2. **Flexible in output format** (Turtle, RDF/XML, JSON‑LD) using the same configuration mechanism.
-
-It’s designed for inclusion in a GitHub repository, with ready-to-copy code snippets.
-
-> **Why this approach?**  
-> • Dataverse’s Exporter SPI lets you ship a **generic plugin** while installations customize behavior via configuration and standard inputs (`ExportDataProvider`). [1](https://www.youtube.com/watch?v=nxnMvBkoS0k)[2](https://github.com/quarkusio/quarkus/discussions/38522)  
-> • MicroProfile Config & SmallRye Config provide **typed, overrideable config** from system properties, env vars, and `META‑INF/microprofile-config.properties`. [3](https://guides.dataverse.org/en/4.20/admin/metadatacustomization.html)  
-> • DCAT v3 is RDF and supports multiple serializations (Turtle, RDF/XML, JSON‑LD). [1](https://www.youtube.com/watch?v=nxnMvBkoS0k)
+> **Status**: Proof of Concept (PoC)  
+> **Scope**: Externalized DCAT‑3/DCAT‑AP‑NL mapping for Dataverse → RDF (RDF/XML, Turtle, JSON‑LD)  
+> **Owner**: Sjaak Derksen
 
 ---
 
-## 1) Externalize DCAT Field Mappings with `@ConfigMapping` (SmallRye)
+## Why this approach?
 
-### 1.1 Define typed configuration
+There are **many DCAT application profiles** in the wild—some **domain‑specific** (medical, geo‑spatial, ETD), some **regulatory** (DCAT‑AP, DCAT‑AP‑NL), and some **organisation‑specific**. Each profile tends to introduce **additional metadata requirements** (often captured as extra blocks/TSVs in Dataverse). I want a solution that:
+
+- **Externalizes the mapping** from Dataverse JSON → RDF (no hard‑coded Java mapping).
+- Is **profile‑agnostic** and **extensible**: adding or changing a profile is editing a `.properties` file, not rewriting code.
+- Treats the exporter’s input as a generic **`ExportData`** object (wrapping `datasetJson`, files, etc.) and uses **JSONPath** to fetch values.
+- Keeps **prefixes centrally** in `dcat-root.properties`, while element mapping files stay clean (only CURIEs/IRIs).
+
+This separation gives us **config‑driven portability**: moving from DCAT‑AP‑NL to a medical or ETD profile is just a new mapping bundle and a small root configuration—not touching code.
+
+---
+
+## Architecture (PoC)
+
+### 1) Root configuration (`dcat-root.properties`)
+- **Global prefixes** (`prefix.*`) live here.
+- **Elements** to build: `catalog`, `dataset`, `distribution` (and any future ones: `dataService`, `catalogRecord`, etc.).
+- **Relations** (stitching): e.g., `catalog --dcat:dataset--> dataset`, `dataset --dcat:distribution--> distribution`.
+- **Output format**: `rdfxml | turtle | jsonld`.
+
+### 2) Element mapping files (`*.properties`)
+- **Subject IRI** source (const/template/JSONPath).
+- A set of **property value sources**:
+  - `as = literal | iri | bnode | node-ref`
+  - `lang`, `datatype`, `multi`, `map.*`, etc.
+- **JSONPath** to Dataverse fields under **`$.datasetJson`**.  
+  Example:  
+  ```properties
+  props.title_en.json = $.datasetJson.datasetVersion.metadataBlocks.citation.fields[?(@.typeName=='title')].value
+
+*   **Resilience**: use **recursive descent** (`$..GDNDatasetMetadata`) for organisation/domain blocks when nesting may vary.
+
+### 3) Exporter runtime
+
+*   Loads **root** → loads **element mappings** → **builds Jena models** per element → **merges** → applies **relations** → **serializes** to configured format.
+*   **CURIE expansion** uses root prefixes.
+*   **Model prefixes** set from root for human‑readable output.
+
+***
+
+## What works today
+
+*   ✅ **Catalog** mapping produces expected triples: `dct:publisher` (foaf:Agent with names + ROR `dct:type`), `dcat:contactPoint` (vcard:Kind with email, URL, names), multilingual `dct:description` and `dct:title`.
+*   ✅ **Dataset & Distribution** mappings created to match **DCAT‑AP‑NL‑GDN** sheet:
+    *   Dataset: identifier, titles, descriptions, access rights, themes, keywords, publisher, contact‑point, HVD legislation + category.
+    *   Distribution: accessURL, license, byteSize, mediaType (IANA), file format (EU File‑Type NAL).
+*   ✅ **Root prefixes centralized**; element files are CURIE‑only.
+*   ✅ **Unit tests** parse exporter output and assert core triples; parser explicitly set to the chosen format (RIOT + `Lang.*`).
+
+***
+
+## Action points (short‑term)
+
+1.  **Unit test improvements**
+    *   [ ] Switch parsing to **RIOT** with explicit `Lang` based on `exporter.getMediaType()` (avoid auto‑detect pitfalls).
+    *   [ ] Add **AssertJ** checks for:
+        *   Presence of `dcat:Catalog`, `dcat:Dataset`, `dcat:Distribution`.
+        *   Core relations: `catalog dcat:dataset dataset`, `dataset dcat:distribution distribution`.
+        *   Required properties per element (titles, license, accessURL).
+    *   [ ] Add **SHACL validation** (Jena SHACL) to reduce assertion boilerplate:
+        *   Minimal shapes for Catalog/Dataset/Distribution conformance.
+        *   Single assert: `report.conforms()`.
+
+2.  **Input validation (mapping loader)**
+    *   [ ] Fail fast on missing `predicate` or invalid `as` values.
+    *   [ ] Validate `node-ref` has target `node`.
+    *   [ ] Optionally warn (not fail) when JSONPath returns empty for **recommended** fields.
+
+3.  **Output format completeness**
+    *   [ ] Confirm coverage for DCAT‑AP‑NL required/recommended properties:
+        *   Dataset: `dct:title`, `dct:description`, `dct:identifier`, `dct:publisher`, `dcat:theme`, `dcat:keyword`, `dct:accessRights`, (conditional) `dcatap:applicableLegislation`, `dcatap:hvdCategory`.
+        *   Distribution: `dcat:accessURL`, `dct:license`, `dcat:mediaType` (IANA), `dct:format` (EU NAL), `dcat:byteSize`.
+    *   [ ] Add any missing fields you care about (creator, language, temporal/spatial, etc.) as new `props.*` with JSONPath.
+
+4.  **Rudimentary guide (README additions)**
+    *   [ ] Explain how to **set the system property** (`dataverse.dcat3.config`) so `RootConfigLoader` finds `dcat-root.properties`.
+    *   [ ] Show folder layout for root and element mapping files.
+    *   [ ] Document **JSONPath basics** (direct child vs `..` recursive descent).
+    *   [ ] Describe how to turn **Dataverse fields** (e.g., `metadataBlocks.citation`) into JSONPath.
+    *   [ ] Explain **CURIEs** and **prefixes** (centralized in root).
+
+5.  **Profile extensibility**
+    *   [ ] Provide a template for adding new application profiles (e.g., medical or ETD).
+    *   [ ] Describe how to introduce **new Dataverse TSVs** and reference them via JSONPath without code changes.
+    *   [ ] Keep a `profiles/` directory of mapping bundles.
+
+6.  **Per‑file distributions (optional enhancement)**
+    *   [ ] Mint one `dcat:Distribution` per `files[*]` with `subject.iri.template` (e.g., hash or `{index}`), set `multi=true` on properties.
+    *   [ ] Update relations: dataset → multiple distributions.
+
+***
+
+## Language support (to investigate)
+
+Dataverse metadata content is usually in **one language** (often English). Multiple resource bundles affect **UI labels and controlled vocabulary tags**, not free-text fields.  
+For DCAT-AP-NL multilingual requirements (`@nl`, `@en`), we may need:
+
+*   Additional metadata blocks for translations, or
+*   Post-processing to inject alternative language values.
+
+This PoC assumes **English-only content** for now; multilingual handling is a future action point.
+
+***
+
+## Testing strategy (PoC → robust)
+
+*   **RIOT**: Apache Jena’s RDF Input/Output Technology for parsing/serializing RDF. It supports explicit format handling (RDF/XML, Turtle, JSON-LD) and proper language-tag parsing, making tests deterministic and multilingual checks reliable.
+
+### A) AssertJ + RIOT
 
 ```java
-import io.smallrye.config.ConfigMapping;
+String mediaType = exporter.getMediaType(); // "application/rdf+xml"|"text/turtle"|"application/ld+json"
+Lang lang = switch (mediaType.toLowerCase()) {
+  case "application/rdf+xml" -> Lang.RDFXML;
+  case "application/ld+json" -> Lang.JSONLD;
+  default -> Lang.TURTLE;
+};
 
-@ConfigMapping(prefix = "dcat")
-public interface DcatConfig {
-  Catalog catalog();
-  Dataset dataset();
+Model m = ModelFactory.createDefaultModel();
+RDFDataMgr.read(m, new ByteArrayInputStream(bytes), lang);
 
-  interface Catalog {
-    String uri();
-    Field title();
-    Field description();
-    Contact contact();
-    Publisher publisher();
-  }
-
-  interface Dataset {
-    String uri();
-    Field title();
-    Field description();
-    Themes themes();
-  }
-
-  /** A value can come from JSON Pointer, bean path, or be constant. */
-  interface Field {
-    String pointer();      // e.g. /datasetORE/oreDescribes/schemaIsPartOf/schemaName
-    String path();         // e.g. datasetORE.oreDescribes.schemaIsPartOf.schemaName
-    String constValue();   // e.g. "Geological Survey of the Netherlands"
-    String lang();         // e.g. "nl"
-  }
-
-  interface Contact {
-    String fnNl(); String fnEn();
-    String email(); String org();
-  }
-
-  interface Publisher {
-    String nameNl(); String nameEn(); String type(); // e.g., ROR URI
-  }
-
-  /** Example: map identifiers to URIs via a resolver. */
-  interface Themes {
-    String pointer();      // array of identifiers in ExportData JSON
-    String resolver();     // optional resolver name (see §1.3)
-  }
-}
-````
-
-### 1.2 Programmatic retrieval (no CDI)
-
-```java
-import io.smallrye.config.SmallRyeConfig;
-import org.eclipse.microprofile.config.ConfigProvider;
-
-SmallRyeConfig sr = ConfigProvider.getConfig().unwrap(SmallRyeConfig.class);
-DcatConfig cfg = sr.getConfigMapping(DcatConfig.class);
+// Check language tags
+Property DCT_TITLE = m.createProperty("http://purl.org/dc/terms/title");
+m.listStatements(catalog, DCT_TITLE, (RDFNode) null).forEachRemaining(stmt -> {
+    System.out.println(stmt.getObject().asLiteral().getLanguage());
+});
 ```
 
-> This non‑CDI usage (`unwrap(SmallRyeConfig.class)` → `getConfigMapping`) is supported by SmallRye Config and works in Dataverse’s runtime. [\[365tno-my....epoint.com\]](https://365tno-my.sharepoint.com/personal/sjaak_derksen_tno_nl/Documents/Microsoft%20Copilot%20Chat%20Files/GDN-orig.tsv)
+### B) SHACL (Jena)
 
-### 1.3 Mapping engine (pointers, constants, resolvers)
+*   Shapes file: require `dcat:Catalog` to have `dcat:dataset`; `dcat:Dataset` to have `dcat:distribution`; `dcat:Distribution` to have `dcat:accessURL` and `dct:license`.
+*   Test:
 
 ```java
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.vocabulary.*;
-import java.util.*;
-
-public final class DcatMappingEngine {
-  private final DcatConfig cfg;
-  private final ObjectMapper mapper = new ObjectMapper();
-
-  public DcatMappingEngine(DcatConfig cfg) { this.cfg = cfg; }
-
-  /** Build the Jena model from ExportData and its JSON view. */
-  public Model toDcatModel(Object exportDataPojo, JsonNode rootJson) {
-    Model m = ModelFactory.createDefaultModel();
-    m.setNsPrefix("dcat", DCAT.NS);
-    m.setNsPrefix("dct", DCTerms.NS);
-    m.setNsPrefix("foaf", FOAF.NS);
-    m.setNsPrefix("vcard", VCARD.uri);
-
-    // --- Catalog ---
-    Resource catalog = m.createResource(nonEmpty(cfg.catalog().uri()))
-      .addProperty(RDF.type, DCAT.Catalog);
-
-    addLang(m, catalog, DCTerms.title,       extract(rootJson, exportDataPojo, cfg.catalog().title()),       cfg.catalog().title().lang());
-    addLang(m, catalog, DCTerms.description,  extract(rootJson, exportDataPojo, cfg.catalog().description()), cfg.catalog().description().lang());
-
-    // Contact point (VCARD)
-    Resource contact = m.createResource()
-      .addProperty(RDF.type, VCARD.AGENT)
-      .addProperty(VCARD.FN,    m.createLiteral(cfg.catalog().contact().fnNl(), "nl"))
-      .addProperty(VCARD.FN,    m.createLiteral(cfg.catalog().contact().fnEn(), "en"))
-      .addProperty(VCARD.EMAIL, m.createResource(cfg.catalog().contact().email()))
-      .addProperty(VCARD.ORG,   m.createResource(cfg.catalog().contact().org()));
-    catalog.addProperty(DCAT.contactPoint, contact);
-
-    // Publisher (FOAF Agent + dct:type)
-    Resource publisher = m.createResource()
-      .addProperty(RDF.type, FOAF.Agent)
-      .addProperty(DCTerms.type, m.createResource(cfg.catalog().publisher().type()))
-      .addProperty(FOAF.name, m.createLiteral(cfg.catalog().publisher().nameNl(), "nl"))
-      .addProperty(FOAF.name, m.createLiteral(cfg.catalog().publisher().nameEn(), "en"));
-    catalog.addProperty(DCTerms.publisher, publisher);
-
-    // --- Dataset ---
-    Resource dataset = m.createResource(nonEmpty(cfg.dataset().uri()))
-      .addProperty(RDF.type, DCAT.Dataset);
-    addLang(m, dataset, DCTerms.title,       extract(rootJson, exportDataPojo, cfg.dataset().title()),       cfg.dataset().title().lang());
-    addLang(m, dataset, DCTerms.description,  extract(rootJson, exportDataPojo, cfg.dataset().description()), cfg.dataset().description().lang());
-
-    // Themes (identifier -> URI via resolver)
-    for (String id : extractArray(rootJson, cfg.dataset().themes().pointer())) {
-      String themeUri = ResolverRegistry.resolve(cfg.dataset().themes().resolver(), "theme", id);
-      if (themeUri != null && !themeUri.isBlank()) {
-        dataset.addProperty(DCAT.theme, m.createResource(themeUri));
-      }
-    }
-
-    catalog.addProperty(DCAT.dataset, dataset);
-    return m;
-  }
-
-  private static void addLang(Model m, Resource r, Property p, String text, String lang) {
-    if (text != null && !text.isBlank()) r.addProperty(p, m.createLiteral(text, lang));
-  }
-
-  /** Extract value with priority: constValue → JSON Pointer → bean path. */
-  private static String extract(JsonNode root, Object pojo, DcatConfig.Field f) {
-    if (nonEmpty(f.constValue()) != null) return f.constValue();
-    if (nonEmpty(f.pointer())   != null) return root.at(f.pointer()).asText();
-    if (nonEmpty(f.path())      != null) return BeanPaths.get(pojo, f.path()); // implement a lightweight reflection helper
-    return "";
-  }
-
-  private static List<String> extractArray(JsonNode root, String pointer) {
-    ArrayNode arr = (ArrayNode) root.at(pointer);
-    List<String> list = new ArrayList<>();
-    if (arr != null) arr.forEach(n -> list.add(n.asText()));
-    return list;
-  }
-
-  private static String nonEmpty(String s) { return (s == null || s.isBlank()) ? "" : s; }
-}
+Shapes shapes = Shapes.parse(RDFDataMgr.loadGraph("src/test/resources/shapes/dcat.shapes.ttl"));
+ValidationReport report = ShaclValidator.get().validate(shapes, m.getGraph());
+assertThat(report.conforms()).isTrue();
 ```
 
-> Jena’s DCAT/FOAF/VCARD/DCTerms vocabularies provide correct URIs/classes. [\[data.harvard.edu\]](https://data.harvard.edu/dataverse), [\[zenodo.org\]](https://zenodo.org/records/8133723/files/A%20Plug-in%20Approach%20to%20Controlled%20Vocabulary%20Support%20in%20Dataverse.pdf)
+### C) JSONPath smoke tests
 
-### 1.4 Configuration file (defaults)
+*   Verify JSONPaths against `ExportData.datasetJson` to catch typos (e.g., `value` vs `primitiveValue`).
 
-Create `META‑INF/microprofile-config.properties` in your exporter JAR:
+***
+
+## Config conventions
+
+*   **Root system property**: set `-Ddataverse.dcat3.config=/path/to/dcat-root.properties` (or classpath resource name).
+*   **Element files**: stored alongside the root or on classpath—resolved by `RootConfigLoader.resolveElementFile(...)`.
+*   **Prefixes**: only in root; element files use **CURIEs**.
+*   **JSONPath**: `$.datasetJson...` for Dataverse content; `..` for resilient GDN block reads.
+
+***
+
+## Example mapping fragment (Dataset)
 
 ```properties
-# --- Catalog ---
-dcat.catalog.uri=https://example.org/catalog
-dcat.catalog.title.pointer=/datasetORE/oreDescribes/schemaIsPartOf/schemaName
-dcat.catalog.title.lang=nl
-dcat.catalog.description.pointer=/datasetORE/oreDescribes/schemaIsPartOf/schemaDescription
-dcat.catalog.description.lang=nl
+# Subject (dataset IRI)
+subject.iri.json = $.datasetJson.persistentUrl
 
-dcat.catalog.contact.fnNl=Geologische Dienst Nederland
-dcat.catalog.contact.fnEn=Geological Survey of the Netherlands
-dcat.catalog.contact.email=mailto:support@geologischedienst.nl
-dcat.catalog.contact.org=https://www.geologischedienst.nl/
+# Title (EN)
+props.title_en.predicate = dct:title
+props.title_en.as = literal
+props.title_en.lang = en
+props.title_en.json = $.datasetJson.datasetVersion.metadataBlocks.citation.fields[?(@.typeName=='title')].value
 
-dcat.catalog.publisher.nameNl=Nederlandse Organisatie voor Toegepast Natuurwetenschappelijk Onderzoek (nl), TNO
-dcat.catalog.publisher.nameEn=Netherlands Organisation for Applied Scientific Research
-dcat.catalog.publisher.type=https://ror.org/01bnjb948
-
-# --- Dataset ---
-dcat.dataset.uri=https://example.org/dataset/${export.id:1234}
-dcat.dataset.title.pointer=/metadata/title/0/value
-dcat.dataset.title.lang=nl
-dcat.dataset.description.pointer=/metadata/description/0/value
-dcat.dataset.description.lang=nl
-
-# Themes: identifiers are in export JSON; resolve to EU URIs
-dcat.dataset.themes.pointer=/metadata/gdnThemeIds
-dcat.dataset.themes.resolver=eu-theme
-```
-
-**Overrides:** Operators can override any value via **JVM system properties** or **environment variables**; MicroProfile precedence is **system > env > file**. [\[guides.dataverse.org\]](https://guides.dataverse.org/en/4.20/admin/metadatacustomization.html)
-
-***
-
-## 2) Configure Output Format (Turtle, RDF/XML, JSON‑LD)
-
-### 2.1 Add serialization keys
-
-```properties
-dcat.output.format=turtle    # turtle | rdfxml | jsonld
-dcat.output.pretty=true      # pretty-print when supported
-
-# Optional JSON-LD extras
-dcat.output.jsonld.context=https://www.w3.org/ns/dcat.jsonld
-dcat.output.jsonld.frame=
-```
-
-### 2.2 Map format → Jena writer & media type
-
-```java
-enum DcatOutput {
-  TURTLE("TURTLE", "text/turtle"),
-  RDFXML("RDF/XML", "application/rdf+xml"),
-  JSONLD("JSON-LD", "application/ld+json");
-
-  final String jenaSyntax;
-  final String mediaType;
-
-  DcatOutput(String jenaSyntax, String mediaType) {
-    this.jenaSyntax = jenaSyntax; this.mediaType = mediaType;
-  }
-
-  static DcatOutput from(String s) {
-    if (s == null) return TURTLE;
-    switch (s.toLowerCase()) {
-      case "rdfxml": return RDFXML;
-      case "jsonld": return JSONLD;
-      default: return TURTLE;
-    }
-  }
-}
-```
-
-### 2.3 Apply in your exporter
-
-```java
-import io.smallrye.config.SmallRyeConfig;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.apache.jena.rdf.model.Model;
-
-public class Dcat3Exporter implements io.gdcc.spi.export.Exporter {
-
-  private DcatOutput output() {
-    SmallRyeConfig sr = ConfigProvider.getConfig().unwrap(SmallRyeConfig.class);
-    String fmt = sr.getOptionalValue("dcat.output.format", String.class).orElse("turtle");
-    return DcatOutput.from(fmt);
-  }
-
-  @Override
-  public String getMediaType() {
-    return output().mediaType;  // keep media type consistent with writer
-  }
-
-  @Override
-  public void exportDataset(io.gdcc.spi.export.ExportDataProvider provider, java.io.OutputStream out)
-      throws io.gdcc.spi.export.ExportException {
-
-    // Build canonical ExportData + JSON view
-    io.gdcc.spi.export.parsing.ExportData data = io.gdcc.spi.export.parsing.ExportData.builder()
-        .provider(provider).build();
-    com.fasterxml.jackson.databind.JsonNode root = new com.fasterxml.jackson.databind.ObjectMapper()
-        .valueToTree(data);
-
-    // Config mapping for DCAT fields
-    SmallRyeConfig sr = ConfigProvider.getConfig().unwrap(SmallRyeConfig.class);
-    DcatConfig cfg = sr.getConfigMapping(DcatConfig.class);
-
-    // DCAT model
-    Model model = new DcatMappingEngine(cfg).toDcatModel(data, root);
-
-    // Write using configured syntax
-    model.write(out, output().jenaSyntax);
-  }
-
-  // ... other SPI methods (format name, display name, availability, etc.)
-}
-```
-
-> Keep `getMediaType()` aligned with your writer (`text/turtle`, `application/rdf+xml`, or `application/ld+json`). DCAT v3 supports all these serializations. [\[youtube.com\]](https://www.youtube.com/watch?v=nxnMvBkoS0k)
-
-***
-
-## 3) Optional — Namespace prefixes from config
-
-```java
-void applyPrefixes(org.apache.jena.rdf.model.Model m, io.smallrye.config.SmallRyeConfig sr) {
-  sr.getPropertyNames().forEachRemaining(name -> {
-    if (name.startsWith("dcat.ns.")) {
-      String prefix = name.substring("dcat.ns.".length());
-      String uri = sr.getValue(name, String.class);
-      m.setNsPrefix(prefix, uri);
-    }
-  });
-}
-```
-
-**Example:**
-
-```properties
-dcat.ns.dcat=http://www.w3.org/ns/dcat#
-dcat.ns.dct=http://purl.org/dc/terms/
-dcat.ns.foaf=http://xmlns.com/foaf/0.1/
-dcat.ns.vcard=http://www.w3.org/2006/vcard/ns#
+# Access Rights (EU NAL)
+props.accessRights.predicate = dct:accessRights
+props.accessRights.as = iri
+props.accessRights.json = $..GDNDatasetMetadata.fields[?(@.typeName=='GDNaccessRights')].value
+props.accessRights.map.public     = http://publications.europa.eu/resource/authority/access-right/PUBLIC
+props.accessRights.map.restricted = http://publications.europa.eu/resource/authority/access-right/RESTRICTED
+props.accessRights.map.non-public = http://publications.europa.eu/resource/authority/access-right/NON_PUBLIC
 ```
 
 ***
 
-## 4) Maven Shade Plugin (service merging)
+## Roadmap
 
-When producing a single deployable JAR for Dataverse:
-
-*   **Merge service descriptors** so `@AutoService(Exporter.class)` and SmallRye services are discoverable.
-*   Avoid shading Jakarta EE APIs supplied by Payara; relocate only if you hit conflicts.
-
-```xml
-<build>
-  <plugins>
-    <!-- Annotation processing for AutoService -->
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-compiler-plugin</artifactId>
-      <version>3.11.0</version>
-      <configuration>
-        <annotationProcessorPaths>
-          <path>
-            <groupId>com.google.auto.service</groupId>
-            <artifactId>auto-service</artifactId>
-            <version>1.1.1</version>
-          </path>
-        </annotationProcessorPaths>
-      </configuration>
-    </plugin>
-
-    <!-- Shade to build a single deployable JAR -->
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-shade-plugin</artifactId>
-      <version>3.5.0</version>
-      <executions>
-        <execution>
-          <phase>package</phase>
-          <goals><goal>shade</goal></goals>
-          <configuration>
-            <createDependencyReducedPom>true</createDependencyReducedPom>
-            <transformers>
-              <!-- Merge META-INF/services from dependencies -->
-              <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-              <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
-            </transformers>
-
-            <!-- Optional relocation to avoid clashes; add only if needed
-            <relocations>
-              <relocation>
-                <pattern>io.smallrye.config</pattern>
-                <shadedPattern>your.pkg.shaded.smallrye.config</shadedPattern>
-              </relocation>
-            </relocations>
-            -->
-          </configuration>
-        </execution>
-      </executions>
-    </plugin>
-  </plugins>
-</build>
-```
-
-> Community exporters follow similar packaging patterns; Dataverse loads your JAR as an external exporter via the SPI. [\[youtube.com\]](https://www.youtube.com/watch?v=f93AawpGbEA)
+*   **v0.1 (PoC)**: Catalog + Dataset + Distribution; AssertJ tests; explicit parser; centralized prefixes.
+*   **v0.2**: SHACL test suite; per‑file distributions; creator/publisher refinement; spatial/temporal (optional).
+*   **v0.3**: Profile bundles (`profiles/…`) with documentation; CI pipeline (mvn test + SHACL).
+*   **v1.0**: Hardened validation paths, error reporting, profile selector, sample datasets and tutorials.
 
 ***
 
-## 5) Operational Notes
+## Contributing
 
-*   **Configuration precedence:** MicroProfile Config resolves properties from System properties (400), Env vars (300), and `META‑INF/microprofile-config.properties` (100). Ops can override without touching the JAR. [\[guides.dataverse.org\]](https://guides.dataverse.org/en/4.20/admin/metadatacustomization.html)
-*   **Dataverse SPI inputs:** You receive dataset metadata via `ExportDataProvider` (Native JSON, OAI‑ORE, file details). Build `ExportData` once and map fields per config. [\[youtube.com\]](https://www.youtube.com/watch?v=nxnMvBkoS0k)
-*   **Validation:** If needed, add SHACL validation for DCAT‑AP/DCAT‑US in tests; profiles often ship shapes for conformance. [\[github.com\]](https://github.com/erykkul/dataverse-transformer-exporter)
-
-***
-
-## 6) Custom MicroProfile ConfigSource
-
-Implement a ConfigSourceProvider that looks for config.properties in the same directory as the JAR.
-Register it via META-INF/services/org.eclipse.microprofile.config.spi.ConfigSourceProvider so MicroProfile picks it up automatically.
-This requires no JVM flags and works in Payara/Dataverse because MicroProfile Config uses ServiceLoader for extensions.
-
-Conditional tracing via config
-
-Add a property like dcat.trace.enabled=true and optionally dcat.trace.level=debug.
-In your exporter, check this property before logging or dumping ExportData JSON.
-Example:
-```java
-  boolean trace = sr.getOptionalValue("dcat.trace.enabled", Boolean.class)
-                      .orElse(false);
-  if (trace) {  
-      System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
-  }
-```
-This way, ops can turn tracing on/off by editing the config file next to the JAR—no code changes, no redeploy.
-
-Everything else stays the same
-
-Use @ConfigMapping for DCAT field mappings.
-Use dcat.output.format for serialization (Turtle/RDF/XML/JSON-LD).
-Use dcat.ns.* for prefixes.
-All values come from the same external file.
-
-Why this is “no-code” for ops
-
-They download your JAR and drop a config.properties file in the same folder.
-Restart Dataverse → exporter picks up config automatically.
-No JVM flags, no environment tweaks, no classpath hacks.
-
-
-Example config.properties next to JAR
-```properties
-
-# Output format
-dcat.output.format=turtle
-dcat.trace.enabled=true
-
-# Catalog mapping
-dcat.catalog.uri=https://example.org/catalog
-dcat.catalog.title.pointer=/datasetORE/oreDescribes/schemaIsPartOf/schemaName
-dcat.catalog.title.lang=nl
-# ...
-```
+*   Propose new application profile mappings via PR in `profiles/`.
+*   Add/adjust JSONPaths to support additional Dataverse TSVs.
+*   Extend SHACL shapes to capture profile‑specific constraints.
 
 ***
 
-## 7) References
+## License & attribution
 
-*   **Dataverse Exporter SPI & external exporters**: *Metadata Export Formats* and *Admin Guide* (automatic exports, batch exports). [\[youtube.com\]](https://www.youtube.com/watch?v=nxnMvBkoS0k), [\[github.com\]](https://github.com/quarkusio/quarkus/discussions/38522)
-*   **MicroProfile Config** (sources & precedence) and SmallRye `@ConfigMapping`. [\[guides.dataverse.org\]](https://guides.dataverse.org/en/4.20/admin/metadatacustomization.html), [\[365tno-my....epoint.com\]](https://365tno-my.sharepoint.com/personal/sjaak_derksen_tno_nl/Documents/Microsoft%20Copilot%20Chat%20Files/GDN-orig.tsv)
-*   **DCAT v3** (RDF vocabulary & serializations). [\[youtube.com\]](https://www.youtube.com/watch?v=nxnMvBkoS0k)
-*   **Jena vocabularies** (DCAT/FOAF/VCARD/DCTerms). [\[data.harvard.edu\]](https://data.harvard.edu/dataverse), [\[zenodo.org\]](https://zenodo.org/records/8133723/files/A%20Plug-in%20Approach%20to%20Controlled%20Vocabulary%20Support%20in%20Dataverse.pdf)
-
-***
-
-## 8) Checklist
-
-*   [ ] Add `DcatConfig` and `DcatMappingEngine`. See also $6
-*   [ ] Implement `DcatOutput` enum and use it in `getMediaType()` + `model.write(...)`.
-*   [ ] Provide `META‑INF/microprofile-config.properties` with defaults; document overrides.
-*   [ ] Package with Shade (services merged); drop JAR into Dataverse external exporters location; restart Payara.
-*   [ ] Verify in UI/API: “Download Metadata” shows your format; output matches configured serialization.
+*   This PoC composes RDF using **Apache Jena**; validation examples reference **Jena SHACL**.
+*   Media types reference **IANA** registry; concept mappings reference **EU Vocabularies** Named Authority Lists.
+*   See respective licenses and registries for details.
 

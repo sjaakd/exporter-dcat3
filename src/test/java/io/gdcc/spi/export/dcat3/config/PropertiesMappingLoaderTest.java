@@ -1,0 +1,125 @@
+package io.gdcc.spi.export.dcat3.config;
+
+import static io.gdcc.spi.export.util.AssertionsUtil.assertNodeTemplate;
+import static io.gdcc.spi.export.util.AssertionsUtil.assertValueSource;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.io.InputStream;
+
+import org.junit.jupiter.api.Test;
+
+public class PropertiesMappingLoaderTest {
+
+    private MappingModel.Config load(String resource) throws Exception {
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream( resource ) ) {
+            assertThat( in ).as( "Test resource should exist: " + resource ).isNotNull();
+            return new PropertiesMappingLoader().load( in );
+        }
+    }
+
+    @Test
+    void loads_subject() throws Exception {
+        MappingModel.Config cfg = load( "input/config/dcat-catalog.properties" );
+
+        assertThat( cfg.subject.iriConst ).isEqualTo( "https://data.example.org/catalog/gdn-test" );
+        assertThat( cfg.subject.iriJson ).isNull();
+        assertThat( cfg.subject.iriTemplate ).isNull();
+    }
+
+    @Test
+    void loads_literal_properties_with_lang_and_json_or_const() throws Exception {
+        MappingModel.Config cfg = load( "input/config/dcat-catalog.properties" );
+
+        MappingModel.ValueSource titleNl = cfg.props.get( "title_nl" );
+        assertValueSource( titleNl, "literal", "dct:title", "nl", null,
+                                          "$.datasetORE.oreDescribes.schemaIsPartOf.schemaName", null, null, false );
+
+        MappingModel.ValueSource titleEn = cfg.props.get( "title_en" );
+        assertValueSource( titleEn, "literal", "dct:title", "en", null,
+                                          null, "GDN Catalog (test)", null, false );
+
+        MappingModel.ValueSource descrNl = cfg.props.get( "description_nl" );
+        assertValueSource( descrNl, "literal", "dct:description", "nl", null,
+                                          "$.datasetORE.oreDescribes.schemaIsPartOf.schemaDescription", null, null, false );
+
+        MappingModel.ValueSource descrEn = cfg.props.get( "description_en" );
+        assertValueSource( descrEn, "literal", "dct:description", "en", null, null,
+                                          "Catalog for GDN datasets (test description)", null, false );
+    }
+
+    @Test
+    void loads_node_ref_properties_and_node_templates() throws Exception {
+        MappingModel.Config cfg = load( "input/config/dcat-catalog.properties" );
+
+        // contact node-ref property
+        MappingModel.ValueSource cp = cfg.props.get( "contactPoint" );
+        assertValueSource( cp, "node-ref", "dcat:contactPoint", null, null, null, null, "contact", false );
+
+        // contact node template
+        MappingModel.NodeTemplate contact = cfg.nodes.get( "contact" );
+        assertNodeTemplate( contact, "contact", "bnode", null, "vcard:Kind" );
+        assertThat( contact.props ).hasSize( 4 );
+        assertValueSource( contact.props.get( "fn_nl" ), "literal", "vcard:fn", "nl", null, null,
+                                          "Geologische Dienst Nederland", null, false );
+        assertValueSource( contact.props.get( "fn_en" ), "literal", "vcard:fn", "en", null, null,
+                                          "Geological Survey of the Netherlands", null, false );
+        assertValueSource( contact.props.get( "email" ), "iri", "vcard:hasEmail", null, null, null,
+                                          "mailto:support@geologischedienst.nl", null, false );
+        assertValueSource( contact.props.get( "url" ), "iri", "vcard:hasURL", null, null, null,
+                                          "https://www.geologischedienst.nl/contact/", null, false );
+
+        // publisher node-ref property
+        MappingModel.ValueSource pub = cfg.props.get( "publisher" );
+        assertValueSource( pub, "node-ref", "dct:publisher", null, null, null, null, "publisher", false );
+
+        // publisher node template
+        MappingModel.NodeTemplate publisher = cfg.nodes.get( "publisher" );
+        assertNodeTemplate( publisher, "publisher", "bnode", null, "foaf:Agent" );
+        assertThat( publisher.props ).hasSize( 3 );
+        assertValueSource( publisher.props.get( "type" ), "iri", "dct:type", null, null, null, "https://ror.org/01bnjb948", null, false );
+        assertValueSource( publisher.props.get( "name_nl" ), "literal", "foaf:name", "nl", null, null,
+                                          "Nederlandse Organisatie voor Toegepast Natuurwetenschappelijk Onderzoek (nl), TNO", null,
+                                          false );
+        assertValueSource( publisher.props.get( "name_en" ), "literal", "foaf:name", "en", null, null,
+                                          "Netherlands Organisation for Applied Scientific Research", null, false );
+    }
+
+    @Test
+    void ignores_unknown_keys_but_keeps_known_ones() throws Exception {
+        // simulate unknown key: load a tiny properties string
+        String props = "props.foo.predicate = dct:title\n" + "props.foo.bar = unknown\n";
+        MappingModel.Config cfg = new PropertiesMappingLoader().load( new java.io.ByteArrayInputStream( props.getBytes() ) );
+
+        // loader should have created ValueSource and set the known field only
+        assertThat( cfg.props ).containsKey( "foo" );
+        MappingModel.ValueSource vs = cfg.props.get( "foo" );
+        assertThat( vs.predicate ).isEqualTo( "dct:title" );
+        // unknown 'bar' should be ignored silently
+        assertThat( vs.lang ).isNull();
+        assertThat( vs.as ).isEqualTo( "literal" ); // default you set in ValueSource
+    }
+
+    @Test
+    void supports_map_entries_when_present() throws Exception {
+        String props = "props.language.predicate = dct:language\n" + "props.language.as = iri\n" + "props.language.json = $.dataset.language\n"
+            + "props.language.map.nl = http://publications.europa.eu/resource/authority/language/NLD\n" + "props.language.map.en = http://publications.europa.eu/resource/authority/language/ENG\n";
+        MappingModel.Config cfg = new PropertiesMappingLoader().load( new java.io.ByteArrayInputStream( props.getBytes() ) );
+
+        MappingModel.ValueSource lang = cfg.props.get( "language" );
+        assertThat( lang.map ).containsEntry( "nl", "http://publications.europa.eu/resource/authority/language/NLD" )
+                  .containsEntry( "en", "http://publications.europa.eu/resource/authority/language/ENG" );
+    }
+
+    @Test
+    void fails_cleanly_on_missing_resource() {
+        assertThatThrownBy( () -> {
+            try (InputStream in = getClass().getClassLoader()
+                                            .getResourceAsStream( "mappings/nope.properties" )) {
+                new PropertiesMappingLoader().load( in ); // in == null → NPE if you don’t guard
+            }
+        } ).isInstanceOf( NullPointerException.class )
+                  .as( "Guard against null InputStream in your loader (or throw FileNotFound)" )
+                  .withFailMessage( "Consider making PropertiesMappingLoader.load throw FileNotFoundException when InputStream is null" );
+    }
+}

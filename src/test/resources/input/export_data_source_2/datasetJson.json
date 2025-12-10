@@ -1,0 +1,294 @@
+{
+  "id": 10,
+  "identifier": "TESTLZSVMZ",
+  "persistentUrl": "https://doi.org/10.FAKE/TESTLZSVMZ",
+  "protocol": "doi",
+  "authority": "10.FAKE",
+  "separator": "/",
+  "publisher": "Root",
+  "publicationDate": "2025-12-07",
+  "storageIdentifier": "file://10.FAKE/TESTLZSVMZ",
+  "datasetType": "dataset",
+  "datasetVersion": {
+    "id": 7,
+    "versionState": "RELEASED",
+    "releaseTime": "2025-12-07T16:12:45Z",
+    "citation": "Admin, Dataverse, 2025, \"test1\", https://doi.org/10.FAKE/TESTLZSVMZ, Root, V1",
+    "storageIdentifier": "file://10.FAKE/TESTLZSVMZ",
+    "fileAccessRequest": true,
+    "versionNumber": 1,
+    "citationDate": "2025-12-07",
+    "license": {
+      "rightsIdentifierScheme": "SPDX",
+      "schemeUri": "https://spdx.org/licenses/",
+      "name": "CC0 1.0",
+      "languageCode": "en",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0",
+      "iconUri": "https://licensebuttons.net/p/zero/1.0/88x31.png",
+      "rightsIdentifier": "CC0-1.0"
+    },
+    "createTime": "2025-12-07T15:23:43Z",
+    "latestVersionPublishingState": "RELEASED",
+    "datasetId": 10,
+    "files": [],
+    "datasetPersistentId": "doi:10.FAKE/TESTLZSVMZ",
+    "versionMinorNumber": 0,
+    "internalVersionNumber": 4,
+    "metadataBlocks": {
+      "citation": {
+        "displayName": "Citation Metadata",
+        "name": "citation",
+        "fields": [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "compoundValues": null,
+            "primitiveValue": [
+              "test1"
+            ]
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "compoundValues": [
+              {
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "compoundValues": null,
+                  "primitiveValue": [
+                    "Admin, Dataverse"
+                  ]
+                },
+                "authorAffiliation": {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "compoundValues": null,
+                  "primitiveValue": [
+                    "GDN"
+                  ]
+                }
+              }
+            ],
+            "primitiveValue": null
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
+            "compoundValues": [
+              {
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "compoundValues": null,
+                  "primitiveValue": [
+                    "dataverse@gdnnet.nl"
+                  ]
+                },
+                "datasetContactAffiliation": {
+                  "typeName": "datasetContactAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "compoundValues": null,
+                  "primitiveValue": [
+                    "GDN"
+                  ]
+                },
+                "datasetContactName": {
+                  "typeName": "datasetContactName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "compoundValues": null,
+                  "primitiveValue": [
+                    "Admin, Dataverse"
+                  ]
+                }
+              }
+            ],
+            "primitiveValue": null
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "typeClass": "compound",
+            "compoundValues": [
+              {
+                "dsDescriptionDate": {
+                  "typeName": "dsDescriptionDate",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "compoundValues": null,
+                  "primitiveValue": [
+                    "2025-11-27"
+                  ]
+                },
+                "dsDescriptionValue": {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "compoundValues": null,
+                  "primitiveValue": [
+                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+                  ]
+                }
+              }
+            ],
+            "primitiveValue": null
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "compoundValues": null,
+            "primitiveValue": [
+              "Earth and Environmental Sciences"
+            ]
+          },
+          {
+            "typeName": "keyword",
+            "multiple": true,
+            "typeClass": "compound",
+            "compoundValues": [
+              {
+                "keywordVocabulary": {
+                  "typeName": "keywordVocabulary",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "compoundValues": null,
+                  "primitiveValue": [
+                    "cvn1"
+                  ]
+                },
+                "keywordValue": {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "compoundValues": null,
+                  "primitiveValue": [
+                    "t1"
+                  ]
+                }
+              }
+            ],
+            "primitiveValue": null
+          },
+          {
+            "typeName": "depositor",
+            "multiple": false,
+            "typeClass": "primitive",
+            "compoundValues": null,
+            "primitiveValue": [
+              "Admin, Dataverse"
+            ]
+          },
+          {
+            "typeName": "dateOfDeposit",
+            "multiple": false,
+            "typeClass": "primitive",
+            "compoundValues": null,
+            "primitiveValue": [
+              "2025-12-07"
+            ]
+          }
+        ]
+      },
+      "GDNDatasetMetadata": {
+        "displayName": "GDN dataset metadata",
+        "name": "GDNDatasetMetadata",
+        "fields": [
+          {
+            "typeName": "GDNdomain",
+            "multiple": false,
+            "typeClass": "controlledVocabulary",
+            "compoundValues": null,
+            "primitiveValue": [
+              "geology"
+            ]
+          },
+          {
+            "typeName": "GDNidentifier",
+            "multiple": false,
+            "typeClass": "primitive",
+            "compoundValues": null,
+            "primitiveValue": [
+              "test"
+            ]
+          },
+          {
+            "typeName": "GDNpublisher",
+            "multiple": false,
+            "typeClass": "controlledVocabulary",
+            "compoundValues": null,
+            "primitiveValue": [
+              "geo_survey_nl"
+            ]
+          },
+          {
+            "typeName": "GDNaccessRights",
+            "multiple": false,
+            "typeClass": "controlledVocabulary",
+            "compoundValues": null,
+            "primitiveValue": [
+              "public"
+            ]
+          },
+          {
+            "typeName": "GDNtheme",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "compoundValues": null,
+            "primitiveValue": [
+              "ener",
+              "tech"
+            ]
+          },
+          {
+            "typeName": "GDNhvdCompliant",
+            "multiple": false,
+            "typeClass": "compound",
+            "compoundValues": [
+              {
+                "GDNhvdApplicableLegislation": {
+                  "typeName": "GDNhvdApplicableLegislation",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "compoundValues": null,
+                  "primitiveValue": [
+                    "eu_2023_138"
+                  ]
+                },
+                "GDNhvdCategory": {
+                  "typeName": "GDNhvdCategory",
+                  "multiple": true,
+                  "typeClass": "controlledVocabulary",
+                  "compoundValues": null,
+                  "primitiveValue": [
+                    "geology"
+                  ]
+                }
+              }
+            ],
+            "primitiveValue": null
+          },
+          {
+            "typeName": "GDNrights",
+            "multiple": false,
+            "typeClass": "primitive",
+            "compoundValues": null,
+            "primitiveValue": [
+              "sdsfdf"
+            ]
+          }
+        ]
+      }
+    },
+    "publicationDate": "2025-12-07",
+    "lastUpdateTime": "2025-12-07T16:12:45Z"
+  }
+}

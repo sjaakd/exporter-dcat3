@@ -1,13 +1,13 @@
 package io.gdcc.spi.export.dcat3;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auto.service.AutoService;
@@ -16,62 +16,31 @@ import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.dcat3.config.MappingModel;
 import io.gdcc.spi.export.dcat3.config.PropertiesMappingLoader;
-import io.gdcc.spi.export.dcat3.mapping.CatalogMapper;
-import io.gdcc.spi.export.parsing.ExportData;
-import io.gdcc.spi.export.parsing.datasetORE.SchemaIsPartOf;
-import io.smallrye.config.SmallRyeConfig;
+import io.gdcc.spi.export.dcat3.config.RootConfig;
+import io.gdcc.spi.export.dcat3.config.RootConfigLoader;
+import io.gdcc.spi.export.dcat3.mapping.Prefixes;
+import io.gdcc.spi.export.dcat3.mapping.ResourceMapper;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.vocabulary.FOAF;
-import org.apache.jena.vocabulary.DCAT;
-import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.VCARD;
 
 @AutoService( Exporter.class )
 public class Dcat3Exporter implements Exporter {
 
-    public static final String NL = "nl";
-    public static final String EN = "en";
-
-    private final SmallRyeConfig cfg;
-    private final DcatConfig mapping;
-
-    // Simple enum for format → writer + media type
-    enum DcatOutput {
-        TURTLE( "TURTLE", "text/turtle" ), RDFXML( "RDF/XML", "application/rdf+xml" ), JSONLD( "JSON-LD", "application/ld+json" );
-
-        final String jenaSyntax;
-        final String mediaType;
-
-        DcatOutput(String s, String m) {
-            this.jenaSyntax = s;
-            this.mediaType = m;
-        }
-
-        static DcatOutput from(String v) {
-            if ( v == null ) {
-                return TURTLE;
-            }
-            switch ( v.toLowerCase() ) {
-                case "rdfxml":
-                    return RDFXML;
-                case "jsonld":
-                    return JSONLD;
-                default:
-                    return TURTLE;
-            }
-        }
-    }
+    private RootConfig root;
 
     public Dcat3Exporter() {
-        this.cfg = LocalConfig.build( Dcat3Exporter.class, DcatConfig.class );
-        this.mapping = cfg.getConfigMapping( DcatConfig.class );
-
-        // Optional: print a one‑line banner if tracing is enabled
-        boolean trace = cfg.getOptionalValue( "dcat.trace.enabled", Boolean.class ).orElse( false );
-        if ( trace ) {
-            System.out.println( "[DCAT3] Tracing enabled (config.properties found next to JAR)." );
+        try {
+            this.root = RootConfigLoader.load();
+        }
+        catch ( IOException e ) {
+            throw new RuntimeException( e );
+        }
+        if ( root.trace ) {
+            System.out.println( "[DCAT3] Root config loaded in @PostConstruct." );
         }
     }
 
@@ -112,7 +81,6 @@ public class Dcat3Exporter implements Exporter {
      */
     @Override
     public Boolean isAvailableToUsers() {
-        System.out.println( "Sjaak: DCAT-3 Exporter isAvailableToUsers called!" );
         return true;
     }
 
@@ -122,132 +90,95 @@ public class Dcat3Exporter implements Exporter {
      */
     @Override
     public String getMediaType() {
-        System.out.println( "Sjaak: DCAT-3 Exporter getMediaType called!" );
-        //        String fmt = cfg.getOptionalValue("dcat.output.format", String.class).orElse("turtle");
-        //        return DcatOutput.from(fmt).mediaType;
-        return " application/rdf+xml";
+        // Use root.outputFormat
+        switch ( root.outputFormat.toLowerCase( Locale.ROOT ) ) {
+            case "rdfxml":
+                return "application/rdf+xml";
+            case "jsonld":
+                return "application/ld+json";
+            default:
+                return "text/turtle";
+        }
     }
 
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try {
             ExportData exportData = ExportData.builder().provider( dataProvider ).build();
-
-            // Serialize ExportData back to JSON tree for mapping lookups
             ObjectMapper mapper = new ObjectMapper();
-            byte[] jsonBytes = mapper.writeValueAsBytes( exportData );
-            JsonNode root = mapper.readTree( jsonBytes );
+            if ( root.trace ) {
+                try {
+                    String json = mapper.writerWithDefaultPrettyPrinter()
+                                        .writeValueAsString( exportData );
+                    System.out.println( json );
+                }
+                catch ( JsonProcessingException e ) {
+                    System.out.println( "Unable to trace export data!!");
+                }
+            }
 
-            // Load catalog mapping from classpath or external file
-            MappingModel.Config mapping = loadCatalogMapping( "dcat-catalog.properties" );
+            JsonNode rootJson = mapper.valueToTree( exportData );
 
-            // Build the model from mapping + JSON
-            CatalogMapper cm = new CatalogMapper( mapping );
-            Model model = cm.build( root );
+            // Build each element
+            Map<String, Model> models = new LinkedHashMap<>();
+            Map<String, Resource> subjects = new LinkedHashMap<>();
+            Prefixes prefixes = new Prefixes( root.prefixes );
 
-            // Write (use TURTLE/RDFXML/JSON-LD as you prefer)
-            model.write( outputStream, "TURTLE" );
+            for ( RootConfig.Element element : root.elements ) {
+                // Load the element mapping through RootConfigLoader (relative to root file dir)
+                try (InputStream in = RootConfigLoader.resolveElementFile( root, element.file )) {
+                    MappingModel.Config modelConfig = new PropertiesMappingLoader().load( in );
+
+                    ResourceMapper mapper2 = new ResourceMapper( modelConfig, prefixes, element.typeCurieOrIri );
+                    Model model = mapper2.build( rootJson );
+
+                    // Remember model & try to locate the subject by rdf:type
+                    String typeIri = prefixes.expand( element.typeCurieOrIri );
+                    ResIterator it = model.listResourcesWithProperty( RDF.type, model.createResource( typeIri ) );
+                    Resource subj = it.hasNext() ? it.next() : null;
+
+                    models.put( element.id, model );
+                    if ( subj != null ) {
+                        subjects.put( element.id, subj );
+                    }
+                }
+            }
+
+            // Merge all element models
+            Model model = ModelFactory.createDefaultModel();
+            model.setNsPrefixes( prefixes.jena() );
+            models.values().forEach( model::add );
+
+            // Apply relations from root
+            for ( RootConfig.Relation relation : root.relations ) {
+                Resource subject = subjects.get( relation.subjectElementId );
+                Resource objectElementId = subjects.get( relation.objectElementId );
+                if ( subject == null || objectElementId == null ) {
+                    continue; // could log a warning based on r.cardinality
+                }
+
+                Property property = model.createProperty( prefixes.expand( relation.predicateCurieOrIri ) );
+                model.add( subject, property, objectElementId );
+            }
+
+            // Serialize in the configured format
+            String outputFormat = root.outputFormat.toLowerCase( Locale.ROOT ).trim();
+            switch ( outputFormat ) {
+                case "rdfxml":
+                    model.write( outputStream, "RDF/XML" );
+                    break;
+                case "jsonld":
+                    model.write( outputStream, "JSON-LD" );
+                    break;
+                default:
+                    model.write( outputStream, "TURTLE" );
+                    break;
+            }
+
         }
         catch ( Exception e ) {
-            throw new ExportException( "Failed to export DCAT-3 catalog", e );
+            throw new ExportException( "DCAT export failed", e );
         }
     }
 
-    private MappingModel.Config loadCatalogMapping(String resourceName) throws Exception {
-        try (InputStream in = locate( resourceName )) {
-            if ( in == null ) {
-                throw new FileNotFoundException( resourceName + " not found" );
-            }
-            return new PropertiesMappingLoader().load( in );
-        }
-    }
-
-    private InputStream locate(String name) throws IOException {
-        // 1) next to JAR (if you run as a fat jar)
-        File f = new File( name );
-        if ( f.exists() ) {
-            return new FileInputStream( f );
-        }
-        // 2) classpath
-        InputStream cp = Thread.currentThread().getContextClassLoader().getResourceAsStream( name );
-        if ( cp != null ) {
-            return cp;
-        }
-        return Dcat3Exporter.class.getResourceAsStream( "/" + name );
-    }
-
-    /**
-     * This method is called by Dataverse when metadata for a given dataset in this format is
-     * requested.
-     */
-    //    @Override
-    //    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
-    //
-    //        System.out.println("Sjaak: DCAT-3 Exporter exportDataset called!");
-    //        ExportData exportData = ExportData.builder().provider( dataProvider ).build();
-    //
-    //        // temp debug output
-    //        ObjectMapper mapper = new ObjectMapper();
-    //        String json = null;
-    //        try {
-    //            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
-    //            System.out.println(json);
-    //        }
-    //        catch ( JsonProcessingException e ) {
-    //            throw new RuntimeException( e );
-    //        }
-    //
-    //        Model model = ModelFactory.createDefaultModel();
-    //
-    //        String exampleMS = "http://example.org/resource/";
-    //
-    //        // Add prefixes to the model
-    //        model.setNsPrefix( "dcat", DCAT.NS );
-    //        model.setNsPrefix( "dct", DCTerms.NS );
-    //        model.setNsPrefix( "vcard", VCARD.uri );
-    //        model.setNsPrefix( "foaf", FOAF.NS );
-    //        model.setNsPrefix( "exampleMS", exampleMS );
-    //
-    //        // Create a catalog
-    //        Resource catalog = createCatalog( model, exportData.getDatasetORE().oreDescribes().schemaIsPartOf(), exampleMS );
-    //
-    //        // Create a dataset
-    //        Resource dataset = model.createResource( exampleMS )
-    //                                .addProperty( RDF.type, DCAT.Dataset )
-    //                                .addProperty( DCTerms.title, "Example Dataset" )
-    //                                .addProperty( DCTerms.description, "This is an example dataset." );
-    //
-    //        // Add the dataset to the catalog
-    //        catalog.addProperty( DCAT.dataset, dataset );
-    //
-    //        // Write the model to the console
-    //        model.write( outputStream, "TURTLE" );
-    //    }
-    private Resource createCatalog(Model model, SchemaIsPartOf schemaIsPartOf, String exampleMS) {
-
-        // Create the catalog. TODO: origin of this data is dubious.
-        Resource catalog = model.createResource( exampleMS )
-                                .addProperty( RDF.type, DCAT.Catalog )
-                                .addProperty( DCTerms.title, model.createLiteral( schemaIsPartOf.schemaName(), NL ) )
-                                .addProperty( DCTerms.description, model.createLiteral( schemaIsPartOf.schemaDescription(), NL ) );
-
-        // Create the contact point. TODO: where to get the data from?
-        Resource contactPoint = model.createResource().addProperty( RDF.type, VCARD.AGENT ).addProperty( VCARD.FN, model.createLiteral( "Geologische Dienst Nederland", NL ) )
-                                     .addProperty( VCARD.FN, model.createLiteral( "Geological Survey of the Netherlands", EN ) )
-                                     .addProperty( VCARD.EMAIL, model.createResource( "mailto:support@geologischedienst.nl" ) )
-                                     .addProperty( VCARD.ORG, model.createResource( "https://www.geologischedienst.nl/" ) )
-                                     .addProperty( VCARD.Orgunit, model.createLiteral( "Nederlandse Organisatie voor Toegepast Natuurwetenschappelijk Onderzoek (nl), TNO", NL ) )
-                                     .addProperty( VCARD.Orgunit, model.createLiteral( "Netherlands Organisation for Applied Scientific Research", EN ) );
-
-        catalog.addProperty( DCAT.contactPoint, contactPoint );
-
-        // Create the publisher. TODO: where to get the data from?
-        Resource publisher = model.createResource().addProperty( RDF.type, FOAF.Agent ).addProperty( DCTerms.type, model.createResource( "https://ror.org/01bnjb948" ) )
-                                  .addProperty( FOAF.name, model.createLiteral( "Nederlandse Organisatie voor Toegepast Natuurwetenschappelijk Onderzoek (nl), TNO", NL ) )
-                                  .addProperty( FOAF.name, model.createLiteral( "Netherlands Organisation for Applied Scientific Research", EN ) );
-
-        catalog.addProperty( DCTerms.publisher, publisher );
-
-        return catalog;
-    }
 }

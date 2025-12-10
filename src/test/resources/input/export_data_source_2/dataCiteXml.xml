@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd"
+          xmlns="http://datacite.org/schema/kernel-4"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <identifier identifierType="DOI">10.FAKE/TESTLZSVMZ</identifier>
+    <creators>
+        <creator>
+            <creatorName>Geologische Dienst Nederland</creatorName>
+            <affiliation>Nederlandse Organisatie voor Toegepast Natuurwetenschappelijk Onderzoek (TNO)</affiliation>
+        </creator>
+    </creators>
+    <titles>
+        <title>GDN – Test dataset for DCAT-AP-NL mapping</title>
+    </titles>
+    <publisher>Root</publisher>
+    <publicationYear>2025</publicationYear>
+    <dates>
+        <date dateType="Issued">2025-12-07</date>
+    </dates>
+    <resourceType resourceTypeGeneral="Dataset">Dataset</resourceType>
+    <descriptions>
+        <description descriptionType="Abstract">
+            A realistic test dataset for GDN to validate DCAT-AP-NL and internal export mappings.
+        </description>
+    </descriptions>
+    <rightsList>
+        <rights rightsURI="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</rights>
+    </rightsList>
+</resource>
