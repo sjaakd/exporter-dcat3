@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,6 +31,8 @@ import org.apache.jena.vocabulary.RDF;
 @AutoService( Exporter.class )
 public class Dcat3Exporter implements Exporter {
 
+    private static final Logger logger = Logger.getLogger( Dcat3Exporter.class.getCanonicalName());
+
     private RootConfig root;
 
     public Dcat3Exporter() {
@@ -37,10 +40,7 @@ public class Dcat3Exporter implements Exporter {
             this.root = RootConfigLoader.load();
         }
         catch ( IOException e ) {
-            throw new RuntimeException( e );
-        }
-        if ( root.trace ) {
-            System.out.println( "[DCAT3] Root config loaded in @PostConstruct." );
+            logger.warning( "cannot read configuration: " + e.getMessage() );
         }
     }
 
@@ -110,10 +110,12 @@ public class Dcat3Exporter implements Exporter {
                 try {
                     String json = mapper.writerWithDefaultPrettyPrinter()
                                         .writeValueAsString( exportData );
-                    System.out.println( json );
+                    logger.info( json );
                 }
                 catch ( JsonProcessingException e ) {
-                    System.out.println( "Unable to trace export data!!");
+                    logger.warning( e.getMessage() );
+                    // does not make sense to continue export on this error
+                    return;
                 }
             }
 

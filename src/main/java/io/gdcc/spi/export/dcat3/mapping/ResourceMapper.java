@@ -32,23 +32,23 @@ public class ResourceMapper {
     }
 
     public Model build(JsonNode source) {
-        Model m = ModelFactory.createDefaultModel();
-        m.setNsPrefixes( prefixes.jena() );
+        Model model = ModelFactory.createDefaultModel();
+        model.setNsPrefixes( prefixes.jena() );
 
         // Jayway finder over the JSON tree
         JaywayJsonFinder finder = new JaywayJsonFinder( source );
 
-        Resource subject = createSubject( m, finder );
+        Resource subject = createSubject( model, finder );
 
         // rdf:type
         if ( resourceTypeCurieOrIri != null ) {
-            subject.addProperty( RDF.type, m.createResource( prefixes.expand( resourceTypeCurieOrIri ) ) );
+            subject.addProperty( RDF.type, model.createResource( prefixes.expand( resourceTypeCurieOrIri ) ) );
         }
 
         // properties
-        cfg.props.forEach( (id, vs) -> addProperty( m, subject, finder, vs ) );
+        cfg.props.forEach( (id, valueSource) -> addProperty( model, subject, finder, valueSource ) );
 
-        return m;
+        return model;
     }
 
     private Resource createSubject(Model model, JaywayJsonFinder finder) {

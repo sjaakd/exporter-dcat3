@@ -4,6 +4,7 @@ package io.gdcc.spi.export.dcat3.mapping;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.jayway.jsonpath.Configuration;
@@ -16,6 +17,8 @@ import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 
 public class JaywayJsonFinder {
 
+    private static final Logger logger = Logger.getLogger( JaywayJsonFinder.class.getCanonicalName());
+
     private final ReadContext ctx;
 
     public JaywayJsonFinder(JsonNode root) {
@@ -26,10 +29,8 @@ public class JaywayJsonFinder {
                                             .options( Option.ALWAYS_RETURN_LIST, Option.SUPPRESS_EXCEPTIONS )
                                             .build();
 
-        // Parse the already-parsed Jackson tree directly. If you ever see provider mismatch,
-        // switch to: JsonPath.using(config).parse(root.toString());
-        this.ctx = JsonPath.using( config )
-                           .parse( root );
+        // note: root.toString() creates a JSON string representation of the JsonNode that is required to make this parser work
+        this.ctx = JsonPath.using( config ).parse( root.toString() );
     }
 
     /**
@@ -38,29 +39,30 @@ public class JaywayJsonFinder {
      */
     public List<String> list(String jsonPath) {
         if ( jsonPath == null || jsonPath.isEmpty() ) {
+            logger.warning( "jsonPath is null or empty" );
             return Collections.emptyList();
         }
         // Force list typing with TypeRef
-        List<Object> raw = ctx.read( jsonPath, new TypeRef<List<Object>>() {
-        } );
-        if ( raw == null ) {
+        List<Object> raw = ctx.read( jsonPath, new TypeRef<List<Object>>() { } );
+        if ( raw == null || raw.isEmpty() ) {
+            logger.warning( "cannot resolve json path: " + jsonPath );
             return Collections.emptyList();
         }
 
         List<String> out = new ArrayList<>( raw.size() );
-        for ( Object o : raw ) {
-            if ( o == null ) {
+        for ( Object object : raw ) {
+            if ( object == null ) {
                 continue;
             }
-            if ( o instanceof CharSequence ) {
-                out.add( o.toString() );
+            if ( object instanceof CharSequence ) {
+                out.add( object.toString() );
             }
-            else if ( o instanceof Number || o instanceof Boolean ) {
-                out.add( String.valueOf( o ) );
+            else if ( object instanceof Number || object instanceof Boolean ) {
+                out.add( String.valueOf( object ) );
             }
             else {
                 // Complex nodes (maps, arrays, JsonNodes) -> toString()
-                out.add( String.valueOf( o ) );
+                out.add( String.valueOf( object ) );
             }
         }
         return out;

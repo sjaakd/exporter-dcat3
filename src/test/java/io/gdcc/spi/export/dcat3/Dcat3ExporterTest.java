@@ -71,7 +71,7 @@ class Dcat3ExporterTest {
         assertThat( exporter.isHarvestable() ).isFalse();
 
         // -- when
-        exporter.exportDataset( provider, out );
+        exporter.exportDataset( provider, System.out );
 
         // -- then: parse RDF and assert
         byte[] bytes = out.toByteArray();
