@@ -73,7 +73,7 @@ public class Dcat3Exporter implements Exporter {
      */
     @Override
     public Boolean isHarvestable() {
-        return false;
+        return true;
     }
 
     /**
@@ -178,8 +178,8 @@ public class Dcat3Exporter implements Exporter {
             }
 
         }
-        catch ( Exception e ) {
-            throw new ExportException( "DCAT export failed", e );
+        catch ( Throwable t ) {
+            throw new ExportException( "DCAT export failed", t );
         }
     }
 

@@ -1,0 +1,188 @@
+
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix vcard:<http://www.w3.org/2006/vcard/ns#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix eli:  <http://data.europa.eu/eli/ontology#> .
+
+########### Dataset shape ###########
+# Ensures a dcat:Dataset has title(s), identifier, accessRights, at least one keyword,
+# at least one contactPoint (vcard:Kind node), and at least one distribution.
+# Also checks that publisher (foaf:Agent) exists if present.
+
+dcat:DatasetShape
+  a sh:NodeShape ;
+  sh:targetClass dcat:Dataset ;
+
+  # dct:title must exist (language-tagged string)
+  sh:property [
+    sh:path dct:title ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+  ] ;
+
+  # dct:identifier must exist (string is fine for your output)
+  sh:property [
+    sh:path dct:identifier ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+
+  # dct:accessRights must exist and be an IRI (you use EU authority URI)
+  sh:property [
+    sh:path dct:accessRights ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+  ] ;
+
+  # dcat:keyword at least one (language-tagged string)
+  sh:property [
+    sh:path dcat:keyword ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+  ] ;
+
+  # dcat:contactPoint present and points to a vcard:Kind node
+  sh:property [
+    sh:path dcat:contactPoint ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:node vcard:KindShape ;
+  ] ;
+
+  # dcat:distribution at least one and points to a dcat:Distribution node
+  sh:property [
+    sh:path dcat:distribution ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:node dcat:DistributionShape ;
+  ] ;
+
+  # dct:publisher (optional in generic DCAT, but common in DCAT-AP). If present, must be foaf:Agent
+  sh:property [
+    sh:path dct:publisher ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:node foaf:AgentShape ;
+  ] ;
+.
+
+########### Distribution shape ###########
+
+dcat:DistributionShape
+  a sh:NodeShape ;
+  sh:targetClass dcat:Distribution ;
+
+  # accessURL must exist and be an IRI
+  sh:property [
+    sh:path dcat:accessURL ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+  ] ;
+
+  # dct:license if present must be IRI
+  sh:property [
+    sh:path dct:license ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+  ] ;
+
+  # j.0:applicableLegislation if present must be IRI
+  sh:property [
+    sh:path <dcatap:applicableLegislation> ;
+    sh:nodeKind sh:IRI ;
+  ] ;
+.
+
+########### Catalog shape ###########
+
+dcat:CatalogShape
+  a sh:NodeShape ;
+  sh:targetClass dcat:Catalog ;
+
+  # title must exist (language-tagged string)
+  sh:property [
+    sh:path dct:title ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+  ] ;
+
+  # description if present should be language-tagged
+  sh:property [
+    sh:path dct:description ;
+    sh:datatype rdf:langString ;
+  ] ;
+
+  # publisher must be foaf:Agent node
+  sh:property [
+    sh:path dct:publisher ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:node foaf:AgentShape ;
+  ] ;
+
+  # contactPoint present and points to vcard:Kind
+  sh:property [
+    sh:path dcat:contactPoint ;
+    sh:minCount 1 ;
+    sh:node vcard:KindShape ;
+  ] ;
+
+  # dataset linkage; if present, it must be IRI/blank node of type dcat:Dataset
+  sh:property [
+    sh:path dcat:dataset ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
+    sh:node dcat:DatasetShape ;
+  ] ;
+.
+
+########### vCard Kind shape ###########
+
+vcard:KindShape
+  a sh:NodeShape ;
+  sh:targetClass vcard:Kind ;
+
+  # vcard:fn must exist (language-tagged)
+  sh:property [
+    sh:path vcard:fn ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+  ] ;
+
+  # vcard:hasEmail must exist and be IRI (mailto:)
+  sh:property [
+    sh:path vcard:hasEmail ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+  ] ;
+
+  # vcard:hasURL must exist and be IRI (https:)
+  sh:property [
+    sh:path vcard:hasURL ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+  ] ;
+.
+
+########### FOAF Agent shape ###########
+
+foaf:AgentShape
+  a sh:NodeShape ;
+  sh:targetClass foaf:Agent ;
+
+  # foaf:name must exist (at least one; language-tagged string)
+  sh:property [
+    sh:path foaf:name ;
+    sh:minCount 1 ;
+    sh:datatype rdf:langString ;
+  ] ;
+
+  # dct:type if present must be IRI (you use ROR URI)
+  sh:property [
+    sh:path dct:type ;
+    sh:nodeKind sh:IRI ;
+    ] ; .
+

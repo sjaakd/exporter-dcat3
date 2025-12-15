@@ -1,14 +1,90 @@
-
 {
-  "oreDescribes": {
-    "schemaIsPartOf": {
-      "schemaName": "Geologische Dienst Nederland",
-      "schemaDescription": "De catalogus van de Geologische Dienst Nederland (test)."
+  "dcterms:modified": "2025-12-15",
+  "dcterms:creator": "Root",
+  "@type": "ore:ResourceMap",
+  "schema:additionalType": "Dataverse OREMap Format v1.0.1",
+  "dvcore:generatedBy": {
+    "@type": "schema:SoftwareApplication",
+    "schema:name": "Dataverse",
+    "schema:version": "6.6",
+    "schema:url": "https://github.com/iqss/dataverse"
+  },
+  "@id": "http://localhost:8080/api/datasets/export?exporter=OAI_ORE&persistentId=https://doi.org/10.FAKE/TESTGQK3SM",
+  "ore:describes": {
+    "author": {
+      "citation:authorName": "Admin, Dataverse",
+      "citation:authorAffiliation": "GDN",
+      "authorIdentifierScheme": "ROR",
+      "authorIdentifier": "id2"
     },
-    "identifier": "doi:10.FAKE/TESTLZSVMZ",
-    "schemaDatePublished": "2025-12-07T00:00:00Z",
-    "schemaAbout": {
-      "themeCodes": ["geo", "env"]
-    }
+    "GDNDatasetMetadata:GDNhvdCompliant": {
+      "GDNDatasetMetadata:GDNhvdApplicableLegislation": "eu_2023_138",
+      "GDNDatasetMetadata:GDNhvdCategory": "energy_resources"
+    },
+    "citation:dsDescription": {
+      "citation:dsDescriptionValue": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\"",
+      "citation:dsDescriptionDate": "2025-11-27"
+    },
+    "citation:datasetContact": {
+      "citation:datasetContactName": "Admin, Dataverse",
+      "citation:datasetContactAffiliation": "GDN",
+      "citation:datasetContactEmail": "dataverse@gdnnet.nl"
+    },
+    "citation:keyword": {
+      "citation:keywordValue": "t1",
+      "citation:keywordVocabulary": "cvn1"
+    },
+    "citation:depositor": "Admin, Dataverse",
+    "GDNDatasetMetadata:GDNaccessRights": "public",
+    "dateOfDeposit": "2025-12-14",
+    "GDNDatasetMetadata:GDNidentifier": "test",
+    "GDNtheme": "envi",
+    "title": "Test5",
+    "GDNDatasetMetadata:GDNdomain": "co2_storage",
+    "subject": "Earth and Environmental Sciences",
+    "GDNDatasetMetadata:GDNrights": "sdsfdf",
+    "GDNDatasetMetadata:GDNpublisher": "geo_survey_nl",
+    "@id": "https://doi.org/10.FAKE/TESTGQK3SM",
+    "@type": [
+      "ore:Aggregation",
+      "schema:Dataset"
+    ],
+    "schema:version": "1.0",
+    "schema:name": "Test5",
+    "schema:dateModified": "Sun Dec 14 19:31:40 CET 2025",
+    "schema:datePublished": "2025-12-14",
+    "schema:creativeWorkStatus": "RELEASED",
+    "schema:license": "http://creativecommons.org/publicdomain/zero/1.0",
+    "dvcore:fileTermsOfAccess": {
+      "dvcore:fileRequestAccess": true
+    },
+    "schema:includedInDataCatalog": "Root",
+    "schema:isPartOf": {
+      "schema:name": "My Test DV",
+      "@id": "http://localhost:8080/dataverse/mydv",
+      "schema:description": "A test dataverse collection",
+      "schema:isPartOf": {
+        "schema:name": "Root",
+        "@id": "http://localhost:8080/dataverse/root",
+        "schema:description": "The root dataverse."
+      }
+    },
+    "ore:aggregates": [],
+    "schema:hasPart": []
+  },
+  "@context": {
+    "GDNDatasetMetadata": "http://localhost:8080/schema/GDNDatasetMetadata#",
+    "GDNtheme": "http://publications.europa.eu/resource/authority/data-theme",
+    "author": "http://purl.org/dc/terms/creator",
+    "authorIdentifier": "http://purl.org/spar/datacite/AgentIdentifier",
+    "authorIdentifierScheme": "http://purl.org/spar/datacite/AgentIdentifierScheme",
+    "citation": "https://dataverse.org/schema/citation/",
+    "dateOfDeposit": "http://purl.org/dc/terms/dateSubmitted",
+    "dcterms": "http://purl.org/dc/terms/",
+    "dvcore": "https://dataverse.org/schema/core#",
+    "ore": "http://www.openarchives.org/ore/terms/",
+    "schema": "http://schema.org/",
+    "subject": "http://purl.org/dc/terms/subject",
+    "title": "http://purl.org/dc/terms/title"
   }
 }

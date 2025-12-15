@@ -45,7 +45,7 @@ public class JaywayJsonFinder {
         // Force list typing with TypeRef
         List<Object> raw = ctx.read( jsonPath, new TypeRef<List<Object>>() { } );
         if ( raw == null || raw.isEmpty() ) {
-            logger.warning( "cannot resolve json path: " + jsonPath );
+            logger.warning( "cannot resolve json path: '" + jsonPath + "'" );
             return Collections.emptyList();
         }
 

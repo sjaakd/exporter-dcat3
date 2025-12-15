@@ -1,39 +1,39 @@
 {
-  "id": 10,
-  "identifier": "TESTLZSVMZ",
-  "persistentUrl": "https://doi.org/10.FAKE/TESTLZSVMZ",
+  "id": 11,
+  "identifier": "TESTGQK3SM",
+  "persistentUrl": "https://doi.org/10.FAKE/TESTGQK3SM",
   "protocol": "doi",
   "authority": "10.FAKE",
   "separator": "/",
   "publisher": "Root",
-  "publicationDate": "2025-12-07",
-  "storageIdentifier": "file://10.FAKE/TESTLZSVMZ",
+  "publicationDate": "2025-12-14",
+  "storageIdentifier": "file://10.FAKE/TESTGQK3SM",
   "datasetType": "dataset",
   "datasetVersion": {
-    "id": 7,
-    "versionState": "RELEASED",
-    "releaseTime": "2025-12-07T16:12:45Z",
-    "citation": "Admin, Dataverse, 2025, \"test1\", https://doi.org/10.FAKE/TESTLZSVMZ, Root, V1",
-    "storageIdentifier": "file://10.FAKE/TESTLZSVMZ",
-    "fileAccessRequest": true,
+    "id": 8,
+    "datasetId": 11,
+    "datasetPersistentId": "doi:10.FAKE/TESTGQK3SM",
+    "storageIdentifier": "file://10.FAKE/TESTGQK3SM",
     "versionNumber": 1,
-    "citationDate": "2025-12-07",
+    "internalVersionNumber": 4,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "latestVersionPublishingState": "RELEASED",
+    "lastUpdateTime": "2025-12-14T18:31:40Z",
+    "releaseTime": "2025-12-14T18:31:40Z",
+    "createTime": "2025-12-14T18:31:06Z",
+    "publicationDate": "2025-12-14",
+    "citationDate": "2025-12-14",
     "license": {
-      "rightsIdentifierScheme": "SPDX",
-      "schemeUri": "https://spdx.org/licenses/",
       "name": "CC0 1.0",
-      "languageCode": "en",
       "uri": "http://creativecommons.org/publicdomain/zero/1.0",
       "iconUri": "https://licensebuttons.net/p/zero/1.0/88x31.png",
-      "rightsIdentifier": "CC0-1.0"
+      "rightsIdentifier": "CC0-1.0",
+      "rightsIdentifierScheme": "SPDX",
+      "schemeUri": "https://spdx.org/licenses/",
+      "languageCode": "en"
     },
-    "createTime": "2025-12-07T15:23:43Z",
-    "latestVersionPublishingState": "RELEASED",
-    "datasetId": 10,
-    "files": [],
-    "datasetPersistentId": "doi:10.FAKE/TESTLZSVMZ",
-    "versionMinorNumber": 0,
-    "internalVersionNumber": 4,
+    "fileAccessRequest": true,
     "metadataBlocks": {
       "citation": {
         "displayName": "Citation Metadata",
@@ -43,110 +43,94 @@
             "typeName": "title",
             "multiple": false,
             "typeClass": "primitive",
-            "compoundValues": null,
-            "primitiveValue": [
-              "test1"
-            ]
+            "value": "Test5"
           },
           {
             "typeName": "author",
             "multiple": true,
             "typeClass": "compound",
-            "compoundValues": [
+            "value": [
               {
                 "authorName": {
                   "typeName": "authorName",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "compoundValues": null,
-                  "primitiveValue": [
-                    "Admin, Dataverse"
-                  ]
+                  "value": "Admin, Dataverse"
                 },
                 "authorAffiliation": {
                   "typeName": "authorAffiliation",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "compoundValues": null,
-                  "primitiveValue": [
-                    "GDN"
-                  ]
+                  "value": "GDN"
+                },
+                "authorIdentifierScheme": {
+                  "typeName": "authorIdentifierScheme",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "ROR"
+                },
+                "authorIdentifier": {
+                  "typeName": "authorIdentifier",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "id2"
                 }
               }
-            ],
-            "primitiveValue": null
+            ]
           },
           {
             "typeName": "datasetContact",
             "multiple": true,
             "typeClass": "compound",
-            "compoundValues": [
+            "value": [
               {
-                "datasetContactEmail": {
-                  "typeName": "datasetContactEmail",
+                "datasetContactName": {
+                  "typeName": "datasetContactName",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "compoundValues": null,
-                  "primitiveValue": [
-                    "dataverse@gdnnet.nl"
-                  ]
+                  "value": "Admin, Dataverse"
                 },
                 "datasetContactAffiliation": {
                   "typeName": "datasetContactAffiliation",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "compoundValues": null,
-                  "primitiveValue": [
-                    "GDN"
-                  ]
+                  "value": "GDN"
                 },
-                "datasetContactName": {
-                  "typeName": "datasetContactName",
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "compoundValues": null,
-                  "primitiveValue": [
-                    "Admin, Dataverse"
-                  ]
+                  "value": "dataverse@gdnnet.nl"
                 }
               }
-            ],
-            "primitiveValue": null
+            ]
           },
           {
             "typeName": "dsDescription",
             "multiple": true,
             "typeClass": "compound",
-            "compoundValues": [
+            "value": [
               {
-                "dsDescriptionDate": {
-                  "typeName": "dsDescriptionDate",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "compoundValues": null,
-                  "primitiveValue": [
-                    "2025-11-27"
-                  ]
-                },
                 "dsDescriptionValue": {
                   "typeName": "dsDescriptionValue",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "compoundValues": null,
-                  "primitiveValue": [
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-                  ]
+                  "value": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\""
+                },
+                "dsDescriptionDate": {
+                  "typeName": "dsDescriptionDate",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "2025-11-27"
                 }
               }
-            ],
-            "primitiveValue": null
+            ]
           },
           {
             "typeName": "subject",
             "multiple": true,
             "typeClass": "controlledVocabulary",
-            "compoundValues": null,
-            "primitiveValue": [
+            "value": [
               "Earth and Environmental Sciences"
             ]
           },
@@ -154,47 +138,34 @@
             "typeName": "keyword",
             "multiple": true,
             "typeClass": "compound",
-            "compoundValues": [
+            "value": [
               {
-                "keywordVocabulary": {
-                  "typeName": "keywordVocabulary",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "compoundValues": null,
-                  "primitiveValue": [
-                    "cvn1"
-                  ]
-                },
                 "keywordValue": {
                   "typeName": "keywordValue",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "compoundValues": null,
-                  "primitiveValue": [
-                    "t1"
-                  ]
+                  "value": "t1"
+                },
+                "keywordVocabulary": {
+                  "typeName": "keywordVocabulary",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "cvn1"
                 }
               }
-            ],
-            "primitiveValue": null
+            ]
           },
           {
             "typeName": "depositor",
             "multiple": false,
             "typeClass": "primitive",
-            "compoundValues": null,
-            "primitiveValue": [
-              "Admin, Dataverse"
-            ]
+            "value": "Admin, Dataverse"
           },
           {
             "typeName": "dateOfDeposit",
             "multiple": false,
             "typeClass": "primitive",
-            "compoundValues": null,
-            "primitiveValue": [
-              "2025-12-07"
-            ]
+            "value": "2025-12-14"
           }
         ]
       },
@@ -206,89 +177,65 @@
             "typeName": "GDNdomain",
             "multiple": false,
             "typeClass": "controlledVocabulary",
-            "compoundValues": null,
-            "primitiveValue": [
-              "geology"
-            ]
+            "value": "co2_storage"
           },
           {
             "typeName": "GDNidentifier",
             "multiple": false,
             "typeClass": "primitive",
-            "compoundValues": null,
-            "primitiveValue": [
-              "test"
-            ]
+            "value": "test"
           },
           {
             "typeName": "GDNpublisher",
             "multiple": false,
             "typeClass": "controlledVocabulary",
-            "compoundValues": null,
-            "primitiveValue": [
-              "geo_survey_nl"
-            ]
+            "value": "geo_survey_nl"
           },
           {
             "typeName": "GDNaccessRights",
             "multiple": false,
             "typeClass": "controlledVocabulary",
-            "compoundValues": null,
-            "primitiveValue": [
-              "public"
-            ]
+            "value": "public"
           },
           {
             "typeName": "GDNtheme",
             "multiple": true,
             "typeClass": "controlledVocabulary",
-            "compoundValues": null,
-            "primitiveValue": [
-              "ener",
-              "tech"
+            "value": [
+              "envi"
             ]
           },
           {
             "typeName": "GDNhvdCompliant",
             "multiple": false,
             "typeClass": "compound",
-            "compoundValues": [
-              {
-                "GDNhvdApplicableLegislation": {
-                  "typeName": "GDNhvdApplicableLegislation",
-                  "multiple": false,
-                  "typeClass": "controlledVocabulary",
-                  "compoundValues": null,
-                  "primitiveValue": [
-                    "eu_2023_138"
-                  ]
-                },
-                "GDNhvdCategory": {
-                  "typeName": "GDNhvdCategory",
-                  "multiple": true,
-                  "typeClass": "controlledVocabulary",
-                  "compoundValues": null,
-                  "primitiveValue": [
-                    "geology"
-                  ]
-                }
+            "value": {
+              "GDNhvdApplicableLegislation": {
+                "typeName": "GDNhvdApplicableLegislation",
+                "multiple": false,
+                "typeClass": "controlledVocabulary",
+                "value": "eu_2023_138"
+              },
+              "GDNhvdCategory": {
+                "typeName": "GDNhvdCategory",
+                "multiple": true,
+                "typeClass": "controlledVocabulary",
+                "value": [
+                  "energy_resources"
+                ]
               }
-            ],
-            "primitiveValue": null
+            }
           },
           {
             "typeName": "GDNrights",
             "multiple": false,
             "typeClass": "primitive",
-            "compoundValues": null,
-            "primitiveValue": [
-              "sdsfdf"
-            ]
+            "value": "sdsfdf"
           }
         ]
       }
     },
-    "publicationDate": "2025-12-07",
-    "lastUpdateTime": "2025-12-07T16:12:45Z"
+    "files": [],
+    "citation": "Admin, Dataverse, 2025, \"Test5\", https://doi.org/10.FAKE/TESTGQK3SM, Root, V1"
   }
 }

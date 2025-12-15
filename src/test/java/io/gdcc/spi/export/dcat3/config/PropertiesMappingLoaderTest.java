@@ -20,7 +20,7 @@ public class PropertiesMappingLoaderTest {
 
     @Test
     void loads_subject() throws Exception {
-        MappingModel.Config cfg = load( "input/config/dcat-catalog.properties" );
+        MappingModel.Config cfg = load( "input/config_2/dcat-catalog.properties" );
 
         assertThat( cfg.subject.iriConst ).isEqualTo( "https://data.example.org/catalog/gdn-test" );
         assertThat( cfg.subject.iriJson ).isNull();
@@ -29,28 +29,20 @@ public class PropertiesMappingLoaderTest {
 
     @Test
     void loads_literal_properties_with_lang_and_json_or_const() throws Exception {
-        MappingModel.Config cfg = load( "input/config/dcat-catalog.properties" );
-
-        MappingModel.ValueSource titleNl = cfg.props.get( "title_nl" );
-        assertValueSource( titleNl, "literal", "dct:title", "nl", null,
-                                          "$.datasetORE.oreDescribes.schemaIsPartOf.schemaName", null, null, false );
+        MappingModel.Config cfg = load( "input/config_2/dcat-catalog.properties" );
 
         MappingModel.ValueSource titleEn = cfg.props.get( "title_en" );
         assertValueSource( titleEn, "literal", "dct:title", "en", null,
-                                          null, "GDN Catalog (test)", null, false );
-
-        MappingModel.ValueSource descrNl = cfg.props.get( "description_nl" );
-        assertValueSource( descrNl, "literal", "dct:description", "nl", null,
-                                          "$.datasetORE.oreDescribes.schemaIsPartOf.schemaDescription", null, null, false );
+                           "$.datasetORE['ore:describes']['schema:isPartOf']['schema:name']", null, null, false );
 
         MappingModel.ValueSource descrEn = cfg.props.get( "description_en" );
-        assertValueSource( descrEn, "literal", "dct:description", "en", null, null,
-                                          "Catalog for GDN datasets (test description)", null, false );
+        assertValueSource( descrEn, "literal", "dct:description", "en", null, "$.datasetORE['ore:describes']['schema:isPartOf']['schema:description']",
+                                          null, null, false );
     }
 
     @Test
     void loads_node_ref_properties_and_node_templates() throws Exception {
-        MappingModel.Config cfg = load( "input/config/dcat-catalog.properties" );
+        MappingModel.Config cfg = load( "input/config_2/dcat-catalog.properties" );
 
         // contact node-ref property
         MappingModel.ValueSource cp = cfg.props.get( "contactPoint" );
@@ -59,9 +51,8 @@ public class PropertiesMappingLoaderTest {
         // contact node template
         MappingModel.NodeTemplate contact = cfg.nodes.get( "contact" );
         assertNodeTemplate( contact, "contact", "bnode", null, "vcard:Kind" );
-        assertThat( contact.props ).hasSize( 4 );
-        assertValueSource( contact.props.get( "fn_nl" ), "literal", "vcard:fn", "nl", null, null,
-                                          "Geologische Dienst Nederland", null, false );
+        assertThat( contact.props ).hasSize( 3 );
+
         assertValueSource( contact.props.get( "fn_en" ), "literal", "vcard:fn", "en", null, null,
                                           "Geological Survey of the Netherlands", null, false );
         assertValueSource( contact.props.get( "email" ), "iri", "vcard:hasEmail", null, null, null,
