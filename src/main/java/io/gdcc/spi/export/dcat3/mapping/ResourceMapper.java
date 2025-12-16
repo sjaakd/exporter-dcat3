@@ -8,7 +8,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.gdcc.spi.export.dcat3.config.MappingModel;
+import io.gdcc.spi.export.dcat3.config.model.Config;
+import io.gdcc.spi.export.dcat3.config.model.NodeTemplate;
+import io.gdcc.spi.export.dcat3.config.model.ValueSource;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.rdf.model.Literal;
@@ -21,11 +23,11 @@ import org.apache.jena.vocabulary.RDF;
 
 public class ResourceMapper {
 
-    private final MappingModel.Config cfg;
+    private final Config cfg;
     private final Prefixes prefixes;
     private final String resourceTypeCurieOrIri;
 
-    public ResourceMapper(MappingModel.Config config, Prefixes prefixes, String resourceTypeCurieOrIri) {
+    public ResourceMapper(Config config, Prefixes prefixes, String resourceTypeCurieOrIri) {
         this.cfg = config;
         this.prefixes = prefixes;
         this.resourceTypeCurieOrIri = resourceTypeCurieOrIri;
@@ -67,7 +69,7 @@ public class ResourceMapper {
         return ( iri == null ) ? model.createResource() : model.createResource( iri );
     }
 
-    private void addProperty(Model model, Resource subject, JaywayJsonFinder finder, MappingModel.ValueSource valueSource) {
+    private void addProperty(Model model, Resource subject, JaywayJsonFinder finder, ValueSource valueSource) {
         String predicateIri = prefixes.expand( valueSource.predicate );
         if ( predicateIri == null ) {
             return;
@@ -79,7 +81,7 @@ public class ResourceMapper {
         }
     }
 
-    private List<RDFNode> resolveObjects(Model model, JaywayJsonFinder finder, MappingModel.ValueSource valueSource) {
+    private List<RDFNode> resolveObjects(Model model, JaywayJsonFinder finder, ValueSource valueSource) {
         switch ( valueSource.as ) {
             case "node-ref":
                 return Collections.singletonList( buildNodeRef( model, finder, valueSource ) );
@@ -101,8 +103,8 @@ public class ResourceMapper {
         }
     }
 
-    private RDFNode buildNodeRef(Model model, JaywayJsonFinder finder, MappingModel.ValueSource valueSource) {
-        MappingModel.NodeTemplate nt = cfg.nodes.get( valueSource.nodeRef );
+    private RDFNode buildNodeRef(Model model, JaywayJsonFinder finder, ValueSource valueSource) {
+        NodeTemplate nt = cfg.nodes.get( valueSource.nodeRef );
         if ( nt == null ) {
             return model.createResource(); // bnode
         }
@@ -123,7 +125,7 @@ public class ResourceMapper {
         return r;
     }
 
-    private List<String> valuesFromSource(JaywayJsonFinder finder, MappingModel.ValueSource valueSource) {
+    private List<String> valuesFromSource(JaywayJsonFinder finder, ValueSource valueSource) {
         if ( valueSource.constValue != null ) {
             return Collections.singletonList( valueSource.constValue );
         }
@@ -139,7 +141,7 @@ public class ResourceMapper {
         return Collections.emptyList();
     }
 
-    private Function<String, String> applyMapIfAny(MappingModel.ValueSource vs) {
+    private Function<String, String> applyMapIfAny(ValueSource vs) {
         return s -> {
             if ( s == null ) {
                 return null;

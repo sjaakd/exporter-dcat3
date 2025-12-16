@@ -15,10 +15,12 @@ import com.google.auto.service.AutoService;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
-import io.gdcc.spi.export.dcat3.config.MappingModel;
-import io.gdcc.spi.export.dcat3.config.PropertiesMappingLoader;
-import io.gdcc.spi.export.dcat3.config.RootConfig;
-import io.gdcc.spi.export.dcat3.config.RootConfigLoader;
+import io.gdcc.spi.export.dcat3.config.model.Config;
+import io.gdcc.spi.export.dcat3.config.model.Element;
+import io.gdcc.spi.export.dcat3.config.loader.PropertiesMappingLoader;
+import io.gdcc.spi.export.dcat3.config.model.Relation;
+import io.gdcc.spi.export.dcat3.config.model.RootConfig;
+import io.gdcc.spi.export.dcat3.config.loader.RootConfigLoader;
 import io.gdcc.spi.export.dcat3.mapping.Prefixes;
 import io.gdcc.spi.export.dcat3.mapping.ResourceMapper;
 import org.apache.jena.rdf.model.Model;
@@ -126,13 +128,13 @@ public class Dcat3Exporter implements Exporter {
             Map<String, Resource> subjects = new LinkedHashMap<>();
             Prefixes prefixes = new Prefixes( root.prefixes );
 
-            for ( RootConfig.Element element : root.elements ) {
+            for ( Element element : root.elements ) {
                 // Load the element mapping through RootConfigLoader (relative to root file dir)
-                try (InputStream in = RootConfigLoader.resolveElementFile( root, element.file )) {
-                    MappingModel.Config modelConfig = new PropertiesMappingLoader().load( in );
+                try (InputStream in = RootConfigLoader.resolveElementFile( root, element.file ) ) {
+                    Config modelConfig = new PropertiesMappingLoader().load( in );
 
-                    ResourceMapper mapper2 = new ResourceMapper( modelConfig, prefixes, element.typeCurieOrIri );
-                    Model model = mapper2.build( rootJson );
+                    ResourceMapper resourceMapper = new ResourceMapper( modelConfig, prefixes, element.typeCurieOrIri );
+                    Model model = resourceMapper.build( rootJson );
 
                     // Remember model & try to locate the subject by rdf:type
                     String typeIri = prefixes.expand( element.typeCurieOrIri );
@@ -152,7 +154,7 @@ public class Dcat3Exporter implements Exporter {
             models.values().forEach( model::add );
 
             // Apply relations from root
-            for ( RootConfig.Relation relation : root.relations ) {
+            for ( Relation relation : root.relations ) {
                 Resource subject = subjects.get( relation.subjectElementId );
                 Resource objectElementId = subjects.get( relation.objectElementId );
                 if ( subject == null || objectElementId == null ) {

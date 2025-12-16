@@ -1,26 +1,26 @@
 {
-  "id": 26147,
-  "identifier": "FK2/VQTYHD",
-  "persistentUrl": "https://doi.org/10.5072/FK2/VQTYHD",
+  "id": 3,
+  "identifier": "FK2/6ZUDGC",
+  "persistentUrl": "https://doi.org/10.5072/FK2/6ZUDGC",
   "protocol": "doi",
   "authority": "10.5072",
   "publisher": "Root",
-  "publicationDate": "2024-05-01",
-  "storageIdentifier": "s3://10.5072/FK2/VQTYHD",
+  "publicationDate": "2024-03-20",
+  "storageIdentifier": "local://10.5072/FK2/6ZUDGC",
   "datasetVersion": {
-    "id": 109,
-    "datasetId": 26147,
-    "datasetPersistentId": "doi:10.5072/FK2/VQTYHD",
-    "storageIdentifier": "s3://10.5072/FK2/VQTYHD",
+    "id": 1,
+    "datasetId": 3,
+    "datasetPersistentId": "doi:10.5072/FK2/6ZUDGC",
+    "storageIdentifier": "local://10.5072/FK2/6ZUDGC",
     "versionNumber": 1,
     "versionMinorNumber": 0,
     "versionState": "RELEASED",
-    "latestVersionPublishingState": "RELEASED",
-    "lastUpdateTime": "2024-05-01T20:01:52Z",
-    "releaseTime": "2024-05-01T20:01:52Z",
-    "createTime": "2024-05-01T19:45:45Z",
-    "publicationDate": "2024-05-01",
-    "citationDate": "2024-05-01",
+    "UNF": "UNF:6:RPd9EWHSZwqUvRZuKTJMqg==",
+    "lastUpdateTime": "2024-03-20T14:02:13Z",
+    "releaseTime": "2024-03-20T14:02:13Z",
+    "createTime": "2024-03-20T14:02:04Z",
+    "publicationDate": "2024-03-20",
+    "citationDate": "2024-03-20",
     "license": {
       "name": "CC0 1.0",
       "uri": "http://creativecommons.org/publicdomain/zero/1.0",
@@ -36,7 +36,7 @@
             "typeName": "title",
             "multiple": false,
             "typeClass": "primitive",
-            "value": "Max Schema.org"
+            "value": "Cars"
           },
           {
             "typeName": "author",
@@ -54,19 +54,7 @@
                   "typeName": "authorAffiliation",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "Harvard University"
-                },
-                "authorIdentifierScheme": {
-                  "typeName": "authorIdentifierScheme",
-                  "multiple": false,
-                  "typeClass": "controlledVocabulary",
-                  "value": "ORCID"
-                },
-                "authorIdentifier": {
-                  "typeName": "authorIdentifier",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "0000-0002-9528-9470"
+                  "value": "Harvard"
                 }
               },
               {
@@ -74,13 +62,13 @@
                   "typeName": "authorName",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "IQSS"
+                  "value": "Boon, Paul"
                 },
                 "authorAffiliation": {
                   "typeName": "authorAffiliation",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "Harvard University"
+                  "value": "DANS"
                 }
               }
             ]
@@ -97,11 +85,17 @@
                   "typeClass": "primitive",
                   "value": "Durbin, Philip"
                 },
+                "datasetContactAffiliation": {
+                  "typeName": "datasetContactAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Harvard"
+                },
                 "datasetContactEmail": {
                   "typeName": "datasetContactEmail",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "philip_durbin@harvard.edu"
+                  "value": "dataverse@mailinator.com"
                 }
               }
             ]
@@ -116,7 +110,7 @@
                   "typeName": "dsDescriptionValue",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "Exercising fields used by `schema.org` exporter."
+                  "value": "This dataset is about cars."
                 }
               }
             ]
@@ -126,106 +120,7 @@
             "multiple": true,
             "typeClass": "controlledVocabulary",
             "value": [
-              "Social Sciences",
               "Other"
-            ]
-          },
-          {
-            "typeName": "keyword",
-            "multiple": true,
-            "typeClass": "compound",
-            "value": [
-              {
-                "keywordValue": {
-                  "typeName": "keywordValue",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "foo"
-                }
-              },
-              {
-                "keywordValue": {
-                  "typeName": "keywordValue",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "bar"
-                }
-              }
-            ]
-          },
-          {
-            "typeName": "publication",
-            "multiple": true,
-            "typeClass": "compound",
-            "value": [
-              {
-                "publicationCitation": {
-                  "typeName": "publicationCitation",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "Tykhonov, V., & Durbin, P. (2024, March 20). DCAT3 standard in the context of Dataverse, EOSC and beyond. Zenodo. https://doi.org/10.5281/zenodo.10843668"
-                },
-                "publicationIDType": {
-                  "typeName": "publicationIDType",
-                  "multiple": false,
-                  "typeClass": "controlledVocabulary",
-                  "value": "doi"
-                },
-                "publicationIDNumber": {
-                  "typeName": "publicationIDNumber",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "10.5281/zenodo.10843668"
-                },
-                "publicationURL": {
-                  "typeName": "publicationURL",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "https://doi.org/10.5281/zenodo.10843668"
-                }
-              }
-            ]
-          },
-          {
-            "typeName": "contributor",
-            "multiple": true,
-            "typeClass": "compound",
-            "value": [
-              {
-                "contributorType": {
-                  "typeName": "contributorType",
-                  "multiple": false,
-                  "typeClass": "controlledVocabulary",
-                  "value": "Funder"
-                },
-                "contributorName": {
-                  "typeName": "contributorName",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "NSF"
-                }
-              }
-            ]
-          },
-          {
-            "typeName": "grantNumber",
-            "multiple": true,
-            "typeClass": "compound",
-            "value": [
-              {
-                "grantNumberAgency": {
-                  "typeName": "grantNumberAgency",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "NIH"
-                },
-                "grantNumberValue": {
-                  "typeName": "grantNumberValue",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "3OT2DB000004-01S3"
-                }
-              }
             ]
           },
           {
@@ -238,64 +133,35 @@
             "typeName": "dateOfDeposit",
             "multiple": false,
             "typeClass": "primitive",
-            "value": "2024-05-01"
+            "value": "2024-03-13"
           },
           {
-            "typeName": "timePeriodCovered",
+            "typeName": "keyword",
             "multiple": true,
             "typeClass": "compound",
             "value": [
               {
-                "timePeriodCoveredStart": {
-                  "typeName": "timePeriodCoveredStart",
+                "keywordValue": {
+                  "typeName": "keywordValue",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "2023-01-01"
-                },
-                "timePeriodCoveredEnd": {
-                  "typeName": "timePeriodCoveredEnd",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "2023-12-31"
+                  "value": "Automobiles"
                 }
-              }
-            ]
-          }
-        ]
-      },
-      "geospatial": {
-        "displayName": "Geospatial Metadata",
-        "name": "geospatial",
-        "fields": [
-          {
-            "typeName": "geographicCoverage",
-            "multiple": true,
-            "typeClass": "compound",
-            "value": [
+              },
               {
-                "country": {
-                  "typeName": "country",
-                  "multiple": false,
-                  "typeClass": "controlledVocabulary",
-                  "value": "United States"
-                },
-                "state": {
-                  "typeName": "state",
+                "keywordValue": {
+                  "typeName": "keywordValue",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "MA"
-                },
-                "city": {
-                  "typeName": "city",
+                  "value": "Vehicles"
+                }
+              },
+              {
+                "keywordValue": {
+                  "typeName": "keywordValue",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "Cambridge"
-                },
-                "otherGeographicCoverage": {
-                  "typeName": "otherGeographicCoverage",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "Harvard Square"
+                  "value": "Transportation"
                 }
               }
             ]
@@ -305,34 +171,95 @@
     },
     "files": [
       {
-        "description": "Additional documentation.",
+        "description": "",
+        "label": "compute.py",
+        "restricted": false,
+        "directoryLabel": "code",
+        "version": 2,
+        "datasetVersionId": 1,
+        "dataFile": {
+          "id": 4,
+          "persistentId": "",
+          "filename": "compute.py",
+          "contentType": "text/x-python",
+          "friendlyType": "Python Source Code",
+          "filesize": 15,
+          "description": "",
+          "storageIdentifier": "local://18e5c2b4bbb-3e5d7cdd36eb",
+          "rootDataFileId": -1,
+          "md5": "d84985e94dde671f318076bd7a137f15",
+          "checksum": {
+            "type": "MD5",
+            "value": "d84985e94dde671f318076bd7a137f15"
+          },
+          "tabularData": false,
+          "creationDate": "2024-03-20",
+          "publicationDate": "2024-03-20",
+          "fileAccessRequest": true
+        }
+      },
+      {
+        "description": "",
         "label": "README.md",
         "restricted": false,
         "directoryLabel": "doc",
-        "version": 1,
-        "datasetVersionId": 109,
+        "version": 2,
+        "datasetVersionId": 1,
         "dataFile": {
-          "id": 26148,
+          "id": 5,
           "persistentId": "",
           "filename": "README.md",
           "contentType": "text/markdown",
           "friendlyType": "Markdown Text",
-          "filesize": 34,
-          "description": "Additional documentation.",
-          "storageIdentifier": "s3://beta-dataverse-direct:18f35bee76a-f45ece0b0fcc",
+          "filesize": 28,
+          "description": "",
+          "storageIdentifier": "local://18e5c2b4e7f-215de2f460f1",
           "rootDataFileId": -1,
-          "md5": "ebf050ec8cce5df0a72b100cfc9f442f",
+          "md5": "a2e484d07ee5590cc32182dc2c6ccc83",
           "checksum": {
             "type": "MD5",
-            "value": "ebf050ec8cce5df0a72b100cfc9f442f"
+            "value": "a2e484d07ee5590cc32182dc2c6ccc83"
           },
           "tabularData": false,
-          "creationDate": "2024-05-01",
-          "publicationDate": "2024-05-01",
+          "creationDate": "2024-03-20",
+          "publicationDate": "2024-03-20",
+          "fileAccessRequest": true
+        }
+      },
+      {
+        "description": "",
+        "label": "stata13-auto.tab",
+        "restricted": false,
+        "directoryLabel": "data",
+        "version": 4,
+        "datasetVersionId": 1,
+        "dataFile": {
+          "id": 6,
+          "persistentId": "",
+          "filename": "stata13-auto.tab",
+          "contentType": "text/tab-separated-values",
+          "friendlyType": "Tab-Delimited",
+          "filesize": 4026,
+          "description": "",
+          "storageIdentifier": "local://18e5c2b505c-9712a34b0fe9",
+          "originalFileFormat": "application/x-stata-13",
+          "originalFormatLabel": "Stata 13 Binary",
+          "originalFileSize": 6443,
+          "originalFileName": "stata13-auto.dta",
+          "UNF": "UNF:6:RPd9EWHSZwqUvRZuKTJMqg==",
+          "rootDataFileId": -1,
+          "md5": "7b1201ce6b469796837a835377338c5a",
+          "checksum": {
+            "type": "MD5",
+            "value": "7b1201ce6b469796837a835377338c5a"
+          },
+          "tabularData": true,
+          "creationDate": "2024-03-20",
+          "publicationDate": "2024-03-20",
           "fileAccessRequest": true
         }
       }
     ],
-    "citation": "Durbin, Philip; IQSS, 2024, \"Max Schema.org\", https://doi.org/10.5072/FK2/VQTYHD, Root, V1"
+    "citation": "Durbin, Philip, 2024, \"Cars\", https://doi.org/10.5072/FK2/6ZUDGC, Root, V1, UNF:6:RPd9EWHSZwqUvRZuKTJMqg== [fileUNF]"
   }
 }

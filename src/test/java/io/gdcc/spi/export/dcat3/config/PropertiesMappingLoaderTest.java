@@ -7,11 +7,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.InputStream;
 
+import io.gdcc.spi.export.dcat3.config.loader.PropertiesMappingLoader;
+import io.gdcc.spi.export.dcat3.config.model.Config;
+import io.gdcc.spi.export.dcat3.config.model.NodeTemplate;
+import io.gdcc.spi.export.dcat3.config.model.ValueSource;
 import org.junit.jupiter.api.Test;
 
 public class PropertiesMappingLoaderTest {
 
-    private MappingModel.Config load(String resource) throws Exception {
+    private Config load(String resource) throws Exception {
         try (InputStream in = getClass().getClassLoader().getResourceAsStream( resource ) ) {
             assertThat( in ).as( "Test resource should exist: " + resource ).isNotNull();
             return new PropertiesMappingLoader().load( in );
@@ -20,7 +24,7 @@ public class PropertiesMappingLoaderTest {
 
     @Test
     void loads_subject() throws Exception {
-        MappingModel.Config cfg = load( "input/config_2/dcat-catalog.properties" );
+        Config cfg = load( "input/config_2/dcat-catalog.properties" );
 
         assertThat( cfg.subject.iriConst ).isEqualTo( "https://data.example.org/catalog/gdn-test" );
         assertThat( cfg.subject.iriJson ).isNull();
@@ -29,27 +33,27 @@ public class PropertiesMappingLoaderTest {
 
     @Test
     void loads_literal_properties_with_lang_and_json_or_const() throws Exception {
-        MappingModel.Config cfg = load( "input/config_2/dcat-catalog.properties" );
+        Config cfg = load( "input/config_2/dcat-catalog.properties" );
 
-        MappingModel.ValueSource titleEn = cfg.props.get( "title_en" );
+        ValueSource titleEn = cfg.props.get( "title_en" );
         assertValueSource( titleEn, "literal", "dct:title", "en", null,
                            "$.datasetORE['ore:describes']['schema:isPartOf']['schema:name']", null, null, false );
 
-        MappingModel.ValueSource descrEn = cfg.props.get( "description_en" );
+        ValueSource descrEn = cfg.props.get( "description_en" );
         assertValueSource( descrEn, "literal", "dct:description", "en", null, "$.datasetORE['ore:describes']['schema:isPartOf']['schema:description']",
                                           null, null, false );
     }
 
     @Test
     void loads_node_ref_properties_and_node_templates() throws Exception {
-        MappingModel.Config cfg = load( "input/config_2/dcat-catalog.properties" );
+        Config cfg = load( "input/config_2/dcat-catalog.properties" );
 
         // contact node-ref property
-        MappingModel.ValueSource cp = cfg.props.get( "contactPoint" );
+        ValueSource cp = cfg.props.get( "contactPoint" );
         assertValueSource( cp, "node-ref", "dcat:contactPoint", null, null, null, null, "contact", false );
 
         // contact node template
-        MappingModel.NodeTemplate contact = cfg.nodes.get( "contact" );
+        NodeTemplate contact = cfg.nodes.get( "contact" );
         assertNodeTemplate( contact, "contact", "bnode", null, "vcard:Kind" );
         assertThat( contact.props ).hasSize( 3 );
 
@@ -61,11 +65,11 @@ public class PropertiesMappingLoaderTest {
                                           "https://www.geologischedienst.nl/contact/", null, false );
 
         // publisher node-ref property
-        MappingModel.ValueSource pub = cfg.props.get( "publisher" );
+        ValueSource pub = cfg.props.get( "publisher" );
         assertValueSource( pub, "node-ref", "dct:publisher", null, null, null, null, "publisher", false );
 
         // publisher node template
-        MappingModel.NodeTemplate publisher = cfg.nodes.get( "publisher" );
+        NodeTemplate publisher = cfg.nodes.get( "publisher" );
         assertNodeTemplate( publisher, "publisher", "bnode", null, "foaf:Agent" );
         assertThat( publisher.props ).hasSize( 3 );
         assertValueSource( publisher.props.get( "type" ), "iri", "dct:type", null, null, null, "https://ror.org/01bnjb948", null, false );
@@ -80,11 +84,11 @@ public class PropertiesMappingLoaderTest {
     void ignores_unknown_keys_but_keeps_known_ones() throws Exception {
         // simulate unknown key: load a tiny properties string
         String props = "props.foo.predicate = dct:title\n" + "props.foo.bar = unknown\n";
-        MappingModel.Config cfg = new PropertiesMappingLoader().load( new java.io.ByteArrayInputStream( props.getBytes() ) );
+        Config cfg = new PropertiesMappingLoader().load( new java.io.ByteArrayInputStream( props.getBytes() ) );
 
         // loader should have created ValueSource and set the known field only
         assertThat( cfg.props ).containsKey( "foo" );
-        MappingModel.ValueSource vs = cfg.props.get( "foo" );
+        ValueSource vs = cfg.props.get( "foo" );
         assertThat( vs.predicate ).isEqualTo( "dct:title" );
         // unknown 'bar' should be ignored silently
         assertThat( vs.lang ).isNull();
@@ -95,9 +99,9 @@ public class PropertiesMappingLoaderTest {
     void supports_map_entries_when_present() throws Exception {
         String props = "props.language.predicate = dct:language\n" + "props.language.as = iri\n" + "props.language.json = $.dataset.language\n"
             + "props.language.map.nl = http://publications.europa.eu/resource/authority/language/NLD\n" + "props.language.map.en = http://publications.europa.eu/resource/authority/language/ENG\n";
-        MappingModel.Config cfg = new PropertiesMappingLoader().load( new java.io.ByteArrayInputStream( props.getBytes() ) );
+        Config cfg = new PropertiesMappingLoader().load( new java.io.ByteArrayInputStream( props.getBytes() ) );
 
-        MappingModel.ValueSource lang = cfg.props.get( "language" );
+        ValueSource lang = cfg.props.get( "language" );
         assertThat( lang.map ).containsEntry( "nl", "http://publications.europa.eu/resource/authority/language/NLD" )
                   .containsEntry( "en", "http://publications.europa.eu/resource/authority/language/ENG" );
     }

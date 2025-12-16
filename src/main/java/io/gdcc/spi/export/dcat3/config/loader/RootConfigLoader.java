@@ -1,4 +1,4 @@
-package io.gdcc.spi.export.dcat3.config;
+package io.gdcc.spi.export.dcat3.config.loader;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -9,6 +9,10 @@ import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import io.gdcc.spi.export.dcat3.config.model.Element;
+import io.gdcc.spi.export.dcat3.config.model.Relation;
+import io.gdcc.spi.export.dcat3.config.model.RootConfig;
 
 public final class RootConfigLoader {
 
@@ -90,32 +94,32 @@ public final class RootConfigLoader {
         // elements: element.<name>.(id|type|file)
         Pattern elId = Pattern.compile( "^element\\.([^.]+)\\.id$" );
         for ( String key : properties.stringPropertyNames() ) {
-            Matcher m = elId.matcher( key );
-            if ( !m.matches() ) {
+            Matcher matcher = elId.matcher( key );
+            if ( !matcher.matches() ) {
                 continue;
             }
-            String base = "element." + m.group( 1 );
-            RootConfig.Element el = new RootConfig.Element();
-            el.id = properties.getProperty( base + ".id" );
-            el.typeCurieOrIri = properties.getProperty( base + ".type" );
-            el.file = properties.getProperty( base + ".file" );
-            rootConfig.elements.add( el );
+            String base = "element." + matcher.group( 1 );
+            Element element = new Element();
+            element.id = properties.getProperty( base + ".id" );
+            element.typeCurieOrIri = properties.getProperty( base + ".type" );
+            element.file = properties.getProperty( base + ".file" );
+            rootConfig.elements.add( element );
         }
 
         // relations: relation.<name>.(subject|predicate|object|cardinality)
         Pattern relPred = Pattern.compile( "^relation\\.([^.]+)\\.predicate$" );
         for ( String key : properties.stringPropertyNames() ) {
-            Matcher m = relPred.matcher( key );
-            if ( !m.matches() ) {
+            Matcher matcher = relPred.matcher( key );
+            if ( !matcher.matches() ) {
                 continue;
             }
-            String base = "relation." + m.group( 1 );
-            RootConfig.Relation r = new RootConfig.Relation();
-            r.subjectElementId = properties.getProperty( base + ".subject" );
-            r.predicateCurieOrIri = properties.getProperty( base + ".predicate" );
-            r.objectElementId = properties.getProperty( base + ".object" );
-            r.cardinality = properties.getProperty( base + ".cardinality" );
-            rootConfig.relations.add( r );
+            String base = "relation." + matcher.group( 1 );
+            Relation relation = new Relation();
+            relation.subjectElementId = properties.getProperty( base + ".subject" );
+            relation.predicateCurieOrIri = properties.getProperty( base + ".predicate" );
+            relation.objectElementId = properties.getProperty( base + ".object" );
+            relation.cardinality = properties.getProperty( base + ".cardinality" );
+            rootConfig.relations.add( relation );
         }
         return rootConfig;
     }

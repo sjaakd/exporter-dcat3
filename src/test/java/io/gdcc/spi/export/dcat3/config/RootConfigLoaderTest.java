@@ -7,6 +7,11 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import io.gdcc.spi.export.dcat3.config.loader.PropertiesMappingLoader;
+import io.gdcc.spi.export.dcat3.config.loader.RootConfigLoader;
+import io.gdcc.spi.export.dcat3.config.model.Config;
+import io.gdcc.spi.export.dcat3.config.model.RootConfig;
+import io.gdcc.spi.export.dcat3.config.model.ValueSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -61,11 +66,11 @@ public class RootConfigLoaderTest {
                             .isNotNull();
 
             // Parse with PropertiesMappingLoader to ensure the file is valid
-            MappingModel.Config cfg = new PropertiesMappingLoader().load( in );
+            Config cfg = new PropertiesMappingLoader().load( in );
 
             // Assert: a couple of fields to prove it parsed correctly
             assertThat( cfg.subject.iriConst ).isEqualTo( "https://data.example.org/catalog/gdn-test" );
-            MappingModel.ValueSource titleEn = cfg.props.get( "title_en" );
+            ValueSource titleEn = cfg.props.get( "title_en" );
             assertThat( titleEn ).isNotNull();
             assertThat( titleEn.predicate ).isEqualTo( "dct:title" );
             assertThat( titleEn.as ).isEqualTo( "literal" );
@@ -135,7 +140,7 @@ public class RootConfigLoaderTest {
         // Resolve element from user.home
         try (InputStream in = RootConfigLoader.resolveElementFile( rc, "dcat-catalog-home.properties" )) {
             assertThat( in ).isNotNull();
-            MappingModel.Config cfg = new PropertiesMappingLoader().load( in );
+            Config cfg = new PropertiesMappingLoader().load( in );
             assertThat( cfg.subject.iriConst ).isEqualTo( "https://example.org/catalog/user-home" );
         }
         finally {

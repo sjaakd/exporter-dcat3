@@ -11,7 +11,7 @@ import java.net.URL;
 import java.util.Locale;
 
 import io.gdcc.spi.export.ExportDataProvider;
-import io.gdcc.spi.export.dcat3.config.RootConfigLoader;
+import io.gdcc.spi.export.dcat3.config.loader.RootConfigLoader;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
@@ -40,6 +40,45 @@ class Dcat3ExporterTest {
         else {
             System.clearProperty( RootConfigLoader.SYS_PROP );
         }
+    }
+
+    @Test
+    void exportSet1Test() throws Exception {
+
+        // -- prepare configuration
+        URL dcatRootPropertiesUrl = getClass().getClassLoader().getResource( "input/config_1/dcat-root.properties" );
+        assertThat( dcatRootPropertiesUrl ).isNotNull();
+        File dcatRootPropetiesFile = new File( dcatRootPropertiesUrl.toURI() );
+        System.setProperty( RootConfigLoader.SYS_PROP, dcatRootPropetiesFile.getAbsolutePath() );
+
+        // -- prepare export data provider
+        ExportDataProvider provider = getExportDataProvider( "src/test/resources/input/export_data_source_1" );
+
+        // -- prepare exporter
+        Dcat3Exporter exporter = new Dcat3Exporter();
+
+        // -- action test all the fields
+        assertThat( exporter.getFormatName() ).isEqualTo( "dcat3" );
+        assertThat( exporter.getDisplayName( Locale.ROOT ) ).isEqualTo( "DCAT-3" );
+        assertThat( exporter.isAvailableToUsers() ).isTrue();
+        assertThat( exporter.isHarvestable() ).isTrue();
+        assertThat( exporter.getMediaType() ).isEqualTo(  "text/turtle" );
+
+        // -- action test export function
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        exporter.exportDataset( provider, out );
+        byte[] bytes = out.toByteArray();
+        System.out.println( new String(bytes) );
+
+        // -- result sanity check
+        assertThat( bytes ).as( "Exporter should write RDF bytes" ).isNotEmpty();
+
+        // -- result SHACL validation
+        Model dataModel = readModel( bytes ); // your helper—auto-detects syntax
+        Model shapes = ModelFactory.createDefaultModel();
+        shapes.read( getClass().getClassLoader().getResourceAsStream( "input/shacl_1.ttl" ), null, "TURTLE" );
+        ValidationReport report = ShaclValidator.get().validate( shapes.getGraph(), dataModel.getGraph() );
+        assertThat( report.conforms() ).as( toValidationReport( report ) ).isTrue();
     }
 
     @Test

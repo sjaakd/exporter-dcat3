@@ -2,13 +2,14 @@ package io.gdcc.spi.export.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.gdcc.spi.export.dcat3.config.MappingModel;
+import io.gdcc.spi.export.dcat3.config.model.NodeTemplate;
+import io.gdcc.spi.export.dcat3.config.model.ValueSource;
 
 public final class AssertionsUtil {
 
     private AssertionsUtil() {}
 
-    public static void assertValueSource(MappingModel.ValueSource vs,
+    public static void assertValueSource(ValueSource vs,
                                          String as, String predicate,
                                          String lang, String datatype,
                                          String json, String constValue,
@@ -24,7 +25,7 @@ public final class AssertionsUtil {
         assertThat(vs.multi).as("multi").isEqualTo(multi);
     }
 
-    public static void assertNodeTemplate(MappingModel.NodeTemplate nodeTemplate,
+    public static void assertNodeTemplate(NodeTemplate nodeTemplate,
                                           String id, String kind, String iriConst, String type) {
         assertThat(nodeTemplate).as("NodeTemplate should not be null").isNotNull();
         assertThat(nodeTemplate.id).as("id").isEqualTo(id);
