@@ -1,5 +1,6 @@
 package io.gdcc.spi.export.dcat3.config;
 
+import static io.gdcc.spi.export.dcat3.config.loader.FileResolver.resolveElementFile;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -7,9 +8,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import io.gdcc.spi.export.dcat3.config.loader.PropertiesMappingLoader;
+import io.gdcc.spi.export.dcat3.config.loader.ResourceConfigLoader;
 import io.gdcc.spi.export.dcat3.config.loader.RootConfigLoader;
-import io.gdcc.spi.export.dcat3.config.model.Config;
+import io.gdcc.spi.export.dcat3.config.model.ResourceConfig;
 import io.gdcc.spi.export.dcat3.config.model.RootConfig;
 import io.gdcc.spi.export.dcat3.config.model.ValueSource;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ public class RootConfigLoaderTest {
 
     @Test
     void loads_root_config_and_resolves_element_relative_to_root_dir() throws Exception {
+
         // Arrange: write root and element files under a temp dir
         Path rootFile = temp.resolve( "dcat-root.properties" );
         Path catalogFile = temp.resolve( "dcat-catalog.properties" );
@@ -47,26 +49,26 @@ public class RootConfigLoaderTest {
         System.setProperty( RootConfigLoader.SYS_PROP, rootFile.toString() );
 
         // Act: load the root config
-        RootConfig rc = RootConfigLoader.load();
+        RootConfig rootConfig = RootConfigLoader.load();
 
         // Assert: root-level settings
-        assertThat( rc.outputFormat ).isEqualTo( "rdfxml" );
-        assertThat( rc.trace ).isTrue();
-        assertThat( rc.prefixes ).containsEntry( "dcat", "http://www.w3.org/ns/dcat#" )
+        assertThat( rootConfig.outputFormat ).isEqualTo( "rdfxml" );
+        assertThat( rootConfig.trace ).isTrue();
+        assertThat( rootConfig.prefixes ).containsEntry( "dcat", "http://www.w3.org/ns/dcat#" )
                                  .containsEntry( "dct", "http://purl.org/dc/terms/" );
-        assertThat( rc.elements ).hasSize( 1 );
-        assertThat( rc.elements.get( 0 ).id ).isEqualTo( "catalog" );
-        assertThat( rc.elements.get( 0 ).typeCurieOrIri ).isEqualTo( "dcat:Catalog" );
-        assertThat( rc.elements.get( 0 ).file ).isEqualTo( "dcat-catalog.properties" );
-        assertThat( rc.baseDir ).isEqualTo( temp );
+        assertThat( rootConfig.elements ).hasSize( 1 );
+        assertThat( rootConfig.elements.get( 0 ).id ).isEqualTo( "catalog" );
+        assertThat( rootConfig.elements.get( 0 ).typeCurieOrIri ).isEqualTo( "dcat:Catalog" );
+        assertThat( rootConfig.elements.get( 0 ).file ).isEqualTo( "dcat-catalog.properties" );
+        assertThat( rootConfig.baseDir ).isEqualTo( temp );
 
         // Act: resolve the element file via the loader
-        try (InputStream in = RootConfigLoader.resolveElementFile( rc, rc.elements.get( 0 ).file )) {
+        try (InputStream in = resolveElementFile( rootConfig.baseDir, rootConfig.elements.get( 0 ).file )) {
             assertThat( in ).as( "Element file should be resolvable from root baseDir" )
                             .isNotNull();
 
             // Parse with PropertiesMappingLoader to ensure the file is valid
-            Config cfg = new PropertiesMappingLoader().load( in );
+            ResourceConfig cfg = new ResourceConfigLoader().load( in );
 
             // Assert: a couple of fields to prove it parsed correctly
             assertThat( cfg.subject.iriConst ).isEqualTo( "https://data.example.org/catalog/gdn-test" );
@@ -130,18 +132,18 @@ public class RootConfigLoaderTest {
         System.setProperty( RootConfigLoader.SYS_PROP, "dcat-root-home.properties" );
 
         // Act
-        RootConfig rc = RootConfigLoader.load();
+        RootConfig rootConfig = RootConfigLoader.load();
 
         // Assert
-        assertThat( rc.outputFormat ).isEqualTo( "jsonld" );
-        assertThat( rc.baseDir ).isEqualTo( homeDir );
-        assertThat( rc.elements ).hasSize( 1 );
+        assertThat( rootConfig.outputFormat ).isEqualTo( "jsonld" );
+        assertThat( rootConfig.baseDir ).isEqualTo( homeDir );
+        assertThat( rootConfig.elements ).hasSize( 1 );
 
         // Resolve element from user.home
-        try (InputStream in = RootConfigLoader.resolveElementFile( rc, "dcat-catalog-home.properties" )) {
+        try (InputStream in = resolveElementFile( rootConfig.baseDir, "dcat-catalog-home.properties" )) {
             assertThat( in ).isNotNull();
-            Config cfg = new PropertiesMappingLoader().load( in );
-            assertThat( cfg.subject.iriConst ).isEqualTo( "https://example.org/catalog/user-home" );
+            ResourceConfig resourceConfig = new ResourceConfigLoader().load( in );
+            assertThat( resourceConfig.subject.iriConst ).isEqualTo( "https://example.org/catalog/user-home" );
         }
         finally {
             // Clean up files we wrote under user.home

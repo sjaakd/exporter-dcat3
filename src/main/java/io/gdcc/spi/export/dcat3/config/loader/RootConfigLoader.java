@@ -1,11 +1,9 @@
 package io.gdcc.spi.export.dcat3.config.loader;
 
-import java.io.FileNotFoundException;
+import static io.gdcc.spi.export.dcat3.config.loader.FileResolver.resolveFile;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,66 +15,32 @@ import io.gdcc.spi.export.dcat3.config.model.RootConfig;
 public final class RootConfigLoader {
 
     public static final String SYS_PROP = "dataverse.dcat3.config";
+    private static final Pattern ELEMENT_ID_PATTERN = Pattern.compile( "^element\\.([^.]+)\\.id$" );
+    private static final Pattern RELATION_PREDICATE_PATTERN = Pattern.compile( "^relation\\.([^.]+)\\.predicate$" );
 
     private RootConfigLoader() {
     }
 
     /**
      * Load the root config from the location specified in the system property or fallbacks: relative, relative to user home or resource directory.
+     *
      * @return RootConfig
      * @throws IOException
      */
     public static RootConfig load() throws IOException {
-
         String rootProperty = System.getProperty( SYS_PROP );
         if ( rootProperty == null || rootProperty.trim().isEmpty() ) {
             throw new IllegalArgumentException( "System property '" + SYS_PROP + "' not set; please provide a path to dcat-root.properties" );
         }
 
-        // Resolve path: absolute → relative to CWD → relative to user.home → classpath
-        InputStream in = null;
-        Path baseDir = null;
-
-        Path path = Paths.get( rootProperty );
-        if ( Files.isRegularFile( path ) && Files.isReadable( path ) ) {
-            in = Files.newInputStream( path );
-            baseDir = path.getParent();
-        }
-        else {
-            Path relativeCurrentWorkingDir = Paths.get( "" ).toAbsolutePath().resolve( rootProperty ).normalize();
-            if ( Files.isRegularFile( relativeCurrentWorkingDir ) && Files.isReadable( relativeCurrentWorkingDir ) ) {
-                in = Files.newInputStream( relativeCurrentWorkingDir );
-                baseDir = relativeCurrentWorkingDir.getParent();
-            }
-            else {
-                String userHome = System.getProperty( "user.home" );
-                if ( userHome != null ) {
-                    Path relativeToUserHome = Paths.get( userHome ).resolve( rootProperty ).normalize();
-                    if ( Files.isRegularFile( relativeToUserHome ) && Files.isReadable( relativeToUserHome ) ) {
-                        in = Files.newInputStream( relativeToUserHome );
-                        baseDir = relativeToUserHome.getParent();
-                    }
-                }
-                if ( in == null ) {
-                    // classpath fallback
-                    in = Thread.currentThread().getContextClassLoader().getResourceAsStream( rootProperty );
-                    if ( in == null ) {
-                        in = RootConfigLoader.class.getResourceAsStream( "/" + rootProperty );
-                    }
-                }
-            }
-        }
-        if ( in == null ) {
-            throw new FileNotFoundException( "Cannot locate root properties at: " + rootProperty );
-        }
-
+        FileResolver.ResolvedFile resolved = resolveFile( null, rootProperty );
         Properties properties = new Properties();
-        try (InputStream closeMe = in) {
+        try (InputStream closeMe = resolved.in()) {
             properties.load( closeMe );
         }
 
         RootConfig rootConfig = parse( properties );
-        rootConfig.baseDir = baseDir;
+        rootConfig.baseDir = resolved.baseDir(); // may be null when loaded from classpath
         return rootConfig;
     }
 
@@ -87,14 +51,13 @@ public final class RootConfigLoader {
 
         // prefixes.*
         properties.stringPropertyNames()
-         .stream()
-         .filter( k -> k.startsWith( "prefix." ) )
-         .forEach( k -> rootConfig.prefixes.put( k.substring( "prefix.".length() ), properties.getProperty( k ) ) );
+                  .stream()
+                  .filter( k -> k.startsWith( "prefix." ) )
+                  .forEach( k -> rootConfig.prefixes.put( k.substring( "prefix.".length() ), properties.getProperty( k ) ) );
 
         // elements: element.<name>.(id|type|file)
-        Pattern elId = Pattern.compile( "^element\\.([^.]+)\\.id$" );
         for ( String key : properties.stringPropertyNames() ) {
-            Matcher matcher = elId.matcher( key );
+            Matcher matcher = ELEMENT_ID_PATTERN.matcher( key );
             if ( !matcher.matches() ) {
                 continue;
             }
@@ -107,9 +70,8 @@ public final class RootConfigLoader {
         }
 
         // relations: relation.<name>.(subject|predicate|object|cardinality)
-        Pattern relPred = Pattern.compile( "^relation\\.([^.]+)\\.predicate$" );
         for ( String key : properties.stringPropertyNames() ) {
-            Matcher matcher = relPred.matcher( key );
+            Matcher matcher = RELATION_PREDICATE_PATTERN.matcher( key );
             if ( !matcher.matches() ) {
                 continue;
             }
@@ -122,42 +84,5 @@ public final class RootConfigLoader {
             rootConfig.relations.add( relation );
         }
         return rootConfig;
-    }
-
-    /**
-     * Resolve an element file relative to the root’s directory, then cwd, then user.home, then classpath.
-     */
-    public static InputStream resolveElementFile(RootConfig rootConfig, String fileName) throws IOException {
-        // 1) relative to root file’s directory
-        if ( rootConfig.baseDir != null ) {
-            Path relative = rootConfig.baseDir.resolve( fileName ).normalize();
-            if ( Files.isRegularFile( relative ) && Files.isReadable( relative ) ) {
-                return Files.newInputStream( relative );
-            }
-        }
-        // 2) cwd
-        Path currentWorkingDir = Paths.get( "" ).toAbsolutePath().resolve( fileName );
-        if ( Files.isRegularFile( currentWorkingDir ) && Files.isReadable( currentWorkingDir ) ) {
-            return Files.newInputStream( currentWorkingDir );
-        }
-        // 3) user.home
-        String home = System.getProperty( "user.home" );
-        if ( home != null ) {
-            Path relHome = Paths.get( home ).resolve( fileName );
-            if ( Files.isRegularFile( relHome ) && Files.isReadable( relHome ) ) {
-                return Files.newInputStream( relHome );
-            }
-        }
-        // 4) classpath
-        InputStream classPath = Thread.currentThread().getContextClassLoader().getResourceAsStream( fileName );
-        if ( classPath != null ) {
-            return classPath;
-        }
-        classPath = RootConfigLoader.class.getResourceAsStream( "/" + fileName );
-        if ( classPath != null ) {
-            return classPath;
-        }
-
-        throw new FileNotFoundException( "Element properties not found: " + fileName );
     }
 }

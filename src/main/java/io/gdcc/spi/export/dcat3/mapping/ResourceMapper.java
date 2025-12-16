@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.gdcc.spi.export.dcat3.config.model.Config;
+import io.gdcc.spi.export.dcat3.config.model.ResourceConfig;
 import io.gdcc.spi.export.dcat3.config.model.NodeTemplate;
 import io.gdcc.spi.export.dcat3.config.model.ValueSource;
 import org.apache.jena.datatypes.RDFDatatype;
@@ -23,23 +23,19 @@ import org.apache.jena.vocabulary.RDF;
 
 public class ResourceMapper {
 
-    private final Config cfg;
+    private final ResourceConfig resourceConfig;
     private final Prefixes prefixes;
     private final String resourceTypeCurieOrIri;
 
-    public ResourceMapper(Config config, Prefixes prefixes, String resourceTypeCurieOrIri) {
-        this.cfg = config;
+    public ResourceMapper(ResourceConfig resourceConfig, Prefixes prefixes, String resourceTypeCurieOrIri) {
+        this.resourceConfig = resourceConfig;
         this.prefixes = prefixes;
         this.resourceTypeCurieOrIri = resourceTypeCurieOrIri;
     }
 
-    public Model build(JsonNode source) {
+    public Model build( JaywayJsonFinder finder ) {
         Model model = ModelFactory.createDefaultModel();
         model.setNsPrefixes( prefixes.jena() );
-
-        // Jayway finder over the JSON tree
-        JaywayJsonFinder finder = new JaywayJsonFinder( source );
-
         Resource subject = createSubject( model, finder );
 
         // rdf:type
@@ -48,21 +44,21 @@ public class ResourceMapper {
         }
 
         // properties
-        cfg.props.forEach( (id, valueSource) -> addProperty( model, subject, finder, valueSource ) );
+        resourceConfig.props.forEach( (id, valueSource) -> addProperty( model, subject, finder, valueSource ) );
 
         return model;
     }
 
     private Resource createSubject(Model model, JaywayJsonFinder finder) {
-        String iri = cfg.subject.iriConst;
+        String iri = resourceConfig.subject.iriConst;
 
-        if ( iri == null && cfg.subject.iriTemplate != null ) {
+        if ( iri == null && resourceConfig.subject.iriTemplate != null ) {
             // TODO (optional): implement template vars resolved via JSONPath
-            iri = cfg.subject.iriTemplate;
+            iri = resourceConfig.subject.iriTemplate;
         }
 
-        if ( iri == null && cfg.subject.iriJson != null ) {
-            List<String> vals = finder.list( cfg.subject.iriJson );
+        if ( iri == null && resourceConfig.subject.iriJson != null ) {
+            List<String> vals = finder.list( resourceConfig.subject.iriJson );
             iri = vals.isEmpty() ? null : vals.get( 0 );
         }
 
@@ -104,7 +100,7 @@ public class ResourceMapper {
     }
 
     private RDFNode buildNodeRef(Model model, JaywayJsonFinder finder, ValueSource valueSource) {
-        NodeTemplate nt = cfg.nodes.get( valueSource.nodeRef );
+        NodeTemplate nt = resourceConfig.nodes.get( valueSource.nodeRef );
         if ( nt == null ) {
             return model.createResource(); // bnode
         }

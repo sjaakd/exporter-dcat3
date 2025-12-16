@@ -1,5 +1,7 @@
 package io.gdcc.spi.export.dcat3;
 
+import static io.gdcc.spi.export.dcat3.config.loader.FileResolver.resolveElementFile;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,12 +17,13 @@ import com.google.auto.service.AutoService;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
-import io.gdcc.spi.export.dcat3.config.model.Config;
+import io.gdcc.spi.export.dcat3.config.loader.ResourceConfigLoader;
+import io.gdcc.spi.export.dcat3.config.loader.RootConfigLoader;
+import io.gdcc.spi.export.dcat3.config.model.ResourceConfig;
 import io.gdcc.spi.export.dcat3.config.model.Element;
-import io.gdcc.spi.export.dcat3.config.loader.PropertiesMappingLoader;
 import io.gdcc.spi.export.dcat3.config.model.Relation;
 import io.gdcc.spi.export.dcat3.config.model.RootConfig;
-import io.gdcc.spi.export.dcat3.config.loader.RootConfigLoader;
+import io.gdcc.spi.export.dcat3.mapping.JaywayJsonFinder;
 import io.gdcc.spi.export.dcat3.mapping.Prefixes;
 import io.gdcc.spi.export.dcat3.mapping.ResourceMapper;
 import org.apache.jena.rdf.model.Model;
@@ -122,6 +125,7 @@ public class Dcat3Exporter implements Exporter {
             }
 
             JsonNode rootJson = mapper.valueToTree( exportData );
+            JaywayJsonFinder jaywayJsonFinder = new JaywayJsonFinder( rootJson );
 
             // Build each element
             Map<String, Model> models = new LinkedHashMap<>();
@@ -130,11 +134,11 @@ public class Dcat3Exporter implements Exporter {
 
             for ( Element element : root.elements ) {
                 // Load the element mapping through RootConfigLoader (relative to root file dir)
-                try (InputStream in = RootConfigLoader.resolveElementFile( root, element.file ) ) {
-                    Config modelConfig = new PropertiesMappingLoader().load( in );
+                try (InputStream in = resolveElementFile( root.baseDir, element.file ) ) {
+                    ResourceConfig resourceConfig = new ResourceConfigLoader().load( in );
 
-                    ResourceMapper resourceMapper = new ResourceMapper( modelConfig, prefixes, element.typeCurieOrIri );
-                    Model model = resourceMapper.build( rootJson );
+                    ResourceMapper resourceMapper = new ResourceMapper( resourceConfig, prefixes, element.typeCurieOrIri );
+                    Model model = resourceMapper.build( jaywayJsonFinder );
 
                     // Remember model & try to locate the subject by rdf:type
                     String typeIri = prefixes.expand( element.typeCurieOrIri );
