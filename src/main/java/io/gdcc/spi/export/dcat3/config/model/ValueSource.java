@@ -1,18 +1,45 @@
+
 package io.gdcc.spi.export.dcat3.config.model;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+/**
+ * Declarative mapping for a single property value.
+ */
 public class ValueSource {
-    public String as = "literal"; // literal|iri|bnode|node-ref
-    public String predicate;      // CURIE or absolute IRI
-    public String lang;           // for literals
-    public String datatype;       // absolute IRI
-    public String json;           // JSONPath
-    public String constValue;     // const
-    public String nodeRef;        // node id (for node-ref)
-    public boolean multi = false; // expand arrays or split by comma
+    /** CURIE/IRI of the predicate to emit. */
+    public String predicate;
+
+    /** How to emit the object: "literal" | "iri" | "node-ref". */
+    public String as;
+
+    // Literal metadata
+    public String lang;      // optional language tag
+    public String datatype;  // optional datatype IRI (CURIE allowed via Prefixes)
+
+    // Single-source selector
+    public String json;            // JSONPath (scoped or root via $$ convention)
+    public String constValue;      // constant value
+
+    // Multi-source selectors: ordered list json.1, json.2, ...
+    public List<String> jsonPaths = new ArrayList<>();
+
+    // Node reference (for as=node-ref)
+    public String nodeRef;
+
+    // Multiplicity: if true and json resolves to multiple values, emit all
+    public boolean multi;
+
+    // Conditional emission (future use)
+    public String when;
+
+    // Mapping table (optional): map.raw -> mapped
+    public Map<String, String> map = new LinkedHashMap<>();
+
+    // formatting template. Supports ${value}, ${1}, ${2}, ... and
+    // inline JSONPath placeholders like ${$.path} or ${$$.path}.
     public String format;
-    public String when;           // optional guard expression (future)
-    public Map<String, String> map = new LinkedHashMap<>(); // value mapping
 }

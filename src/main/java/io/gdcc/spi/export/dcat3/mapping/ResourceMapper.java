@@ -95,7 +95,7 @@ public class ResourceMapper {
             case "iri":
                 return valuesFromSource( finder, valueSource ).stream()
                                                               .map( applyMapIfAny( valueSource ) )
-                                                              .map( applyFormatIfAny( valueSource ) )
+                                                              .map( applyFormatIfAny( valueSource, finder ) )  // apply format & placeholders
                                                               .filter( Objects::nonNull )
                                                               .map( model::createResource )
                                                               .collect( Collectors.toList() );
@@ -103,7 +103,7 @@ public class ResourceMapper {
             default:
                 return valuesFromSource( finder, valueSource ).stream()
                                                               .map( applyMapIfAny( valueSource ) )
-                                                              .map( applyFormatIfAny( valueSource ) )
+                                                              .map( applyFormatIfAny( valueSource, finder ) )  // apply format & placeholders
                                                               .filter( Objects::nonNull )
                                                               .map( val -> literal( model, val, valueSource.lang, valueSource.datatype ) )
                                                               .collect( Collectors.toList() );
@@ -119,9 +119,9 @@ public class ResourceMapper {
         if ( nodeTemplate.type != null ) {
             resource.addProperty( RDF.type, model.createResource( prefixes.expand( nodeTemplate.type ) ) );
         }
-        nodeTemplate.props.forEach( (propertyId, propertyValueSource ) -> {
-            Property property = model.createProperty( prefixes.expand( propertyValueSource .predicate ) );
-            for ( RDFNode obj : resolveObjects( model, finder, propertyValueSource  ) ) {
+        nodeTemplate.props.forEach( ( propertyId, propertyValueSource ) -> {
+            Property property = model.createProperty( prefixes.expand( propertyValueSource.predicate ) );
+            for ( RDFNode obj : resolveObjects( model, finder, propertyValueSource ) ) {
                 resource.addProperty( property, obj );
             }
         } );
@@ -138,6 +138,10 @@ public class ResourceMapper {
                 return values;
             }
             return values.isEmpty() ? Collections.emptyList() : Collections.singletonList( values.get( 0 ) );
+        }
+        // If format contains inline JSONPaths or indexed placeholders, ensure we have a single base value
+        if ( valueSource.format != null && !valueSource.format.isBlank() ) {
+            return Collections.singletonList( "" );
         }
         return Collections.emptyList();
     }
@@ -164,28 +168,91 @@ public class ResourceMapper {
         };
     }
 
-    private Function<String, String> applyFormatIfAny(ValueSource valueSource) {
+    private Function<String, String> applyFormatIfAny(ValueSource valueSource, JaywayJsonFinder finder) {
         return s -> {
-            if ( s == null )
-                return null;
-            if ( valueSource.format != null && !valueSource.format.isBlank() ) {
-                // simple ${value} substitution
-                return valueSource.format.replace( "${value}", s );
+            if ( valueSource.format == null || valueSource.format.isBlank() ) {
+                return s; // no formatting requested
             }
-            return s;
+            // Start from format template
+            String formatted = valueSource.format;
+
+            // Legacy ${value}: use current s if provided, else resolve vs.json
+            if ( formatted.contains( "${value}" ) ) {
+                String base = s;
+                if ( ( base == null || base.isEmpty() ) && valueSource.json != null ) {
+                    List<String> values = listScopedOrRoot( finder, valueSource.json );
+                    base = values.isEmpty() ? "" : values.get( 0 );
+                }
+                formatted = formatted.replace( "${value}", base == null ? "" : base );
+            }
+
+            // Indexed ${1}, ${2}, ... from vs.jsonPaths
+            if ( valueSource.jsonPaths != null && !valueSource.jsonPaths.isEmpty() ) {
+                for ( int i = 0; i < valueSource.jsonPaths.size(); i++ ) {
+                    String path = valueSource.jsonPaths.get( i );
+                    List<String> values = listScopedOrRoot( finder, path );
+                    String value = values.isEmpty() ? "" : values.get( 0 );
+                    formatted = formatted.replace( "${" + ( i + 1 ) + "}", value );
+                }
+            }
+
+            // Inline JSONPath placeholders: ${$.path} or ${$$.path}
+            formatted = resolveInlineJsonPlaceholders( formatted, finder );
+            return formatted;
         };
     }
 
-    private Literal literal(Model model, String value, String lang, String datatypeIri) {
-        if ( datatypeIri != null && !datatypeIri.isBlank() ) {
-            RDFDatatype dt = TypeMapper.getInstance()
-                                       .getSafeTypeByName( datatypeIri );
-            return model.createTypedLiteral( value, dt );
+    private String resolveInlineJsonPlaceholders(String format, JaywayJsonFinder finder) {
+        StringBuilder out = new StringBuilder();
+        int start = 0;
+        while ( true ) {
+            int open = format.indexOf( "${", start );
+            if ( open < 0 ) {
+                out.append( format.substring( start ) );
+                break;
+            }
+            out.append( format, start, open );
+            int close = format.indexOf( "}", open + 2 );
+            if ( close < 0 ) { // malformed, append rest
+                out.append( format.substring( open ) );
+                break;
+            }
+            String token = format.substring( open + 2, close );
+            String replacement = null;
+            if ( token.startsWith( "$$" ) ) {
+                List<String> vals = listScopedOrRoot( finder, token ); // listScopedOrRoot handles $$
+                replacement = vals.isEmpty() ? "" : vals.get( 0 );
+            }
+            else if ( token.startsWith( "$" ) ) {
+                List<String> vals = listScopedOrRoot( finder, token );
+                replacement = vals.isEmpty() ? "" : vals.get( 0 );
+            }
+            else {
+                // leave unknown tokens as-is (e.g., ${1} handled earlier)
+                replacement = "${" + token + "}";
+            }
+            out.append( replacement );
+            start = close + 1;
         }
-        if ( lang != null && !lang.isBlank() ) {
-            return model.createLiteral( value, lang );
-        }
-        return model.createLiteral( value );
+        return out.toString();
     }
 
+
+    private Literal literal(Model model, String value, String lang, String datatypeIri) {
+        // EXPAND CURIE datatypes to full IRIs before TypeMapper lookup
+        if (datatypeIri != null && !datatypeIri.isBlank() && !datatypeIri.startsWith("http")) {
+            String expanded = prefixes.expand(datatypeIri);
+            if (expanded != null) {
+                datatypeIri = expanded;
+            }
+        }
+        if (datatypeIri != null && !datatypeIri.isBlank()) {
+            RDFDatatype dt = TypeMapper.getInstance().getSafeTypeByName(datatypeIri);
+            return model.createTypedLiteral(value, dt);
+        }
+        if (lang != null && !lang.isBlank()) {
+            return model.createLiteral(value, lang);
+        }
+        return model.createLiteral(value);
+    }
 }

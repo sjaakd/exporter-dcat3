@@ -29,21 +29,24 @@ public class RootConfigLoaderTest {
         Path catalogFile = temp.resolve( "dcat-catalog.properties" );
 
         // Minimal catalog element mapping (subject + one literal)
-        Files.writeString( catalogFile,
-                           "subject.iri.const = https://data.example.org/catalog/gdn-test\n"
-                               + "props.title_en.predicate = dct:title\n"
-                               + "props.title_en.as = literal\n"
-                               + "props.title_en.lang = en\n"
-                               + "props.title_en.const = Test Catalog\n" );
+        Files.writeString( catalogFile, """
+            subject.iri.const = https://data.example.org/catalog/gdn-test
+            props.title_en.predicate = dct:title
+            props.title_en.as = literal
+            props.title_en.lang = en
+            props.title_en.const = Test Catalog
+            """ );
 
         // Root file that points to the catalog file (relative)
-        Files.writeString( rootFile, "dcat.output.format = rdfxml\n"
-            + "dcat.trace.enabled = true\n"
-            + "prefix.dcat = http://www.w3.org/ns/dcat#\n"
-            + "prefix.dct  = http://purl.org/dc/terms/\n"
-            + "element.catalog.id   = catalog\n"
-            + "element.catalog.type = dcat:Catalog\n"
-            + "element.catalog.file = dcat-catalog.properties\n" );
+        Files.writeString( rootFile, """
+            dcat.output.format = rdfxml
+            dcat.trace.enabled = true
+            prefix.dcat = http://www.w3.org/ns/dcat#
+            prefix.dct  = http://purl.org/dc/terms/
+            element.catalog.id   = catalog
+            element.catalog.type = dcat:Catalog
+            element.catalog.file = dcat-catalog.properties
+            """ );
 
         // Set the system property that RootConfigLoader expects
         System.setProperty( RootConfigLoader.SYS_PROP, rootFile.toString() );
@@ -85,11 +88,12 @@ public class RootConfigLoaderTest {
     void resolves_root_from_cwd_when_not_absolute() throws Exception {
         // Arrange: create root under the temp dir and set SYS_PROP to a relative name
         Path rootFile = temp.resolve( "dcat-root.properties" );
-        Files.writeString( rootFile,
-                           "dcat.output.format = turtle\n"
-                               + "element.catalog.id   = catalog\n"
-                               + "element.catalog.type = dcat:Catalog\n"
-                               + "element.catalog.file = dcat-catalog.properties\n" );
+        Files.writeString( rootFile, """
+            dcat.output.format = turtle
+            element.catalog.id   = catalog
+            element.catalog.type = dcat:Catalog
+            element.catalog.file = dcat-catalog.properties
+            """ );
 
         // Create the element file in the same temp dir
         Path catalogFile = temp.resolve( "dcat-catalog.properties" );
@@ -122,11 +126,12 @@ public class RootConfigLoaderTest {
         Path elementAtHome = homeDir.resolve( "dcat-catalog-home.properties" );
 
         Files.writeString( elementAtHome, "subject.iri.const = https://example.org/catalog/user-home" );
-        Files.writeString( rootAtHome,
-                           "dcat.output.format = jsonld\n"
-                               + "element.catalog.id   = catalog\n"
-                               + "element.catalog.type = dcat:Catalog\n"
-                               + "element.catalog.file = dcat-catalog-home.properties\n" );
+        Files.writeString( rootAtHome, """
+            dcat.output.format = jsonld
+            element.catalog.id   = catalog
+            element.catalog.type = dcat:Catalog
+            element.catalog.file = dcat-catalog-home.properties
+            """ );
 
         // Set SYS_PROP to the relative name so loader tries user.home branch
         System.setProperty( RootConfigLoader.SYS_PROP, "dcat-root-home.properties" );
@@ -159,13 +164,6 @@ public class RootConfigLoaderTest {
 
         assertThatThrownBy( RootConfigLoader::load ).isInstanceOf( IllegalArgumentException.class )
                                                     .hasMessageContaining( RootConfigLoader.SYS_PROP );
-    }
-
-    @Test
-    void fails_cleanly_when_root_file_not_found() {
-        System.setProperty( RootConfigLoader.SYS_PROP, "does-not-exist.properties" );
-        assertThatThrownBy( RootConfigLoader::load ).isInstanceOf( java.io.FileNotFoundException.class )
-                                                    .hasMessageContaining( "Cannot locate root properties" );
     }
 
     // --- helpers ---

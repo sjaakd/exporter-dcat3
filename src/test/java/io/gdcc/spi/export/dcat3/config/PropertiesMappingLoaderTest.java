@@ -83,7 +83,10 @@ public class PropertiesMappingLoaderTest {
     @Test
     void ignores_unknown_keys_but_keeps_known_ones() throws Exception {
         // simulate unknown key: load a tiny properties string
-        String props = "props.foo.predicate = dct:title\n" + "props.foo.bar = unknown\n";
+        String props = """
+            props.foo.predicate = dct:title
+            props.foo.bar = unknown
+            """;
         ResourceConfig resourceConfig = new ResourceConfigLoader().load( new java.io.ByteArrayInputStream( props.getBytes() ) );
 
         // loader should have created ValueSource and set the known field only
@@ -92,13 +95,17 @@ public class PropertiesMappingLoaderTest {
         assertThat( vs.predicate ).isEqualTo( "dct:title" );
         // unknown 'bar' should be ignored silently
         assertThat( vs.lang ).isNull();
-        assertThat( vs.as ).isEqualTo( "literal" ); // default you set in ValueSource
     }
 
     @Test
     void supports_map_entries_when_present() throws Exception {
-        String props = "props.language.predicate = dct:language\n" + "props.language.as = iri\n" + "props.language.json = $.dataset.language\n"
-            + "props.language.map.nl = http://publications.europa.eu/resource/authority/language/NLD\n" + "props.language.map.en = http://publications.europa.eu/resource/authority/language/ENG\n";
+        String props = """
+            props.language.predicate = dct:language
+            props.language.as = iri
+            props.language.json = $.dataset.language
+            props.language.map.nl = http://publications.europa.eu/resource/authority/language/NLD
+            props.language.map.en = http://publications.europa.eu/resource/authority/language/ENG
+            """;
         ResourceConfig cfg = new ResourceConfigLoader().load( new java.io.ByteArrayInputStream( props.getBytes() ) );
 
         ValueSource lang = cfg.props.get( "language" );

@@ -62,20 +62,18 @@ class Dcat3ExporterTest {
         assertThat( exporter.getDisplayName( Locale.ROOT ) ).isEqualTo( "DCAT-3" );
         assertThat( exporter.isAvailableToUsers() ).isTrue();
         assertThat( exporter.isHarvestable() ).isTrue();
-     //   assertThat( exporter.getMediaType() ).isEqualTo(  "text/turtle" );
         assertThat( exporter.getMediaType() ).isEqualTo(  "application/rdf+xml" );
 
         // -- action test export function
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         exporter.exportDataset( provider, out );
         byte[] bytes = out.toByteArray();
-        System.out.println( new String(bytes) );
 
         // -- result sanity check
         assertThat( bytes ).as( "Exporter should write RDF bytes" ).isNotEmpty();
 
         // -- result SHACL validation
-        Model dataModel = readModel( bytes ); // your helper—auto-detects syntax
+        Model dataModel = readModel( bytes, Lang.RDFXML ); // your helper—auto-detects syntax
         Model shapes = ModelFactory.createDefaultModel();
         shapes.read( getClass().getClassLoader().getResourceAsStream( "input/shacl_1.ttl" ), null, "TURTLE" );
         ValidationReport report = ShaclValidator.get().validate( shapes.getGraph(), dataModel.getGraph() );
@@ -113,7 +111,7 @@ class Dcat3ExporterTest {
         assertThat( bytes ).as( "Exporter should write RDF bytes" ).isNotEmpty();
 
         // -- result SHACL validation
-        Model dataModel = readModel( bytes ); // your helper—auto-detects syntax
+        Model dataModel = readModel( bytes, Lang.TURTLE ); // your helper—auto-detects syntax
         Model shapes = ModelFactory.createDefaultModel();
         shapes.read( getClass().getClassLoader().getResourceAsStream( "input/shacl_2.ttl" ), null, "TURTLE" );
         ValidationReport report = ShaclValidator.get().validate( shapes.getGraph(), dataModel.getGraph() );
@@ -138,12 +136,12 @@ class Dcat3ExporterTest {
         return sb.toString();
     }
 
-    private static Model readModel(byte[] rdf) {
+    private static Model readModel(byte[] rdf, Lang lang) {
 
         Model model = ModelFactory.createDefaultModel();
         RDFParser.create()
                  .source( new ByteArrayInputStream( rdf ) )
-                 .lang( Lang.TURTLE )
+                 .lang( lang )
                  .parse( model );
         return model;
 
