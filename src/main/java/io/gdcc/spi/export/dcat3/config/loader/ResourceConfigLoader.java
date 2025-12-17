@@ -1,7 +1,5 @@
+
 package io.gdcc.spi.export.dcat3.config.loader;
-
-
-// PropertiesMappingLoader.java
 
 import static io.gdcc.spi.export.dcat3.config.loader.Util.applyValue;
 
@@ -16,7 +14,7 @@ import io.gdcc.spi.export.dcat3.config.model.ValueSource;
 
 public class ResourceConfigLoader {
 
-    private static final Pattern PROPPERTY_PATTERN = Pattern.compile( "^props\\.([^.]+)\\.(.+)$" );
+    private static final Pattern PROPERTY_PATTERN = Pattern.compile( "^props\\.([^.]+)\\.(.+)$" );
     private static final Pattern NODE_PATTERN = Pattern.compile( "^nodes\\.([^.]+)\\.(.+)$" );
     private static final Pattern NODE_PROPERTY_PATTERN = Pattern.compile( "^props\\.([^.]+)\\.(.+)$" );
 
@@ -26,14 +24,18 @@ public class ResourceConfigLoader {
 
         ResourceConfig resourceConfig = new ResourceConfig();
 
+        // Scope JSON (NEW)
+        resourceConfig.scopeJson = property.getProperty( "scope.json" );
+
         // Subject
         resourceConfig.subject.iriConst = property.getProperty( "subject.iri.const" );
         resourceConfig.subject.iriTemplate = property.getProperty( "subject.iri.template" );
         resourceConfig.subject.iriJson = property.getProperty( "subject.iri.json" );
+        resourceConfig.subject.iriFormat = property.getProperty( "subject.iri.format" ); // NEW
 
         // Props
         for ( String propertyName : property.stringPropertyNames() ) {
-            Matcher matcher = PROPPERTY_PATTERN.matcher( propertyName );
+            Matcher matcher = PROPERTY_PATTERN.matcher( propertyName );
             if ( !matcher.matches() ) {
                 continue;
             }
@@ -76,8 +78,6 @@ public class ResourceConfigLoader {
                 }
             }
         }
-
         return resourceConfig;
     }
-
 }

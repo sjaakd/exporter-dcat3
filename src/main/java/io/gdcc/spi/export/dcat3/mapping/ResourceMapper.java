@@ -1,4 +1,4 @@
-// ResourceMapper.java
+
 package io.gdcc.spi.export.dcat3.mapping;
 
 import java.util.Collections;
@@ -22,7 +22,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 
 public class ResourceMapper {
-
     private final ResourceConfig resourceConfig;
     private final Prefixes prefixes;
     private final String resourceTypeCurieOrIri;
@@ -33,36 +32,49 @@ public class ResourceMapper {
         this.resourceTypeCurieOrIri = resourceTypeCurieOrIri;
     }
 
-    public Model build( JaywayJsonFinder finder ) {
+    public Model build(JaywayJsonFinder finder) {
         Model model = ModelFactory.createDefaultModel();
         model.setNsPrefixes( prefixes.jena() );
-        Resource subject = createSubject( model, finder );
 
-        // rdf:type
-        if ( resourceTypeCurieOrIri != null ) {
-            subject.addProperty( RDF.type, model.createResource( prefixes.expand( resourceTypeCurieOrIri ) ) );
+        List<JsonNode> scopes;
+        if ( resourceConfig.scopeJson != null && !resourceConfig.scopeJson.isBlank() ) {
+            scopes = finder.nodes( resourceConfig.scopeJson );
+            if ( scopes.isEmpty() ) {
+                return model;
+            }
+        }
+        else {
+            scopes = Collections.singletonList( null );
         }
 
-        // properties
-        resourceConfig.props.forEach( (id, valueSource) -> addProperty( model, subject, finder, valueSource ) );
-
+        for ( JsonNode scopeNode : scopes ) {
+            JaywayJsonFinder scoped = ( scopeNode == null ) ? finder : finder.at( scopeNode );
+            Resource subject = createSubject( model, scoped );
+            if ( resourceTypeCurieOrIri != null ) {
+                subject.addProperty( RDF.type, model.createResource( prefixes.expand( resourceTypeCurieOrIri ) ) );
+            }
+            resourceConfig.props.forEach( (id, valueSource) -> addProperty( model, subject, scoped, valueSource ) );
+        }
         return model;
     }
 
     private Resource createSubject(Model model, JaywayJsonFinder finder) {
         String iri = resourceConfig.subject.iriConst;
-
         if ( iri == null && resourceConfig.subject.iriTemplate != null ) {
-            // TODO (optional): implement template vars resolved via JSONPath
             iri = resourceConfig.subject.iriTemplate;
         }
-
+        if ( iri == null && resourceConfig.subject.iriFormat != null && resourceConfig.subject.iriJson != null ) {
+            List<String> vals = listScopedOrRoot( finder, resourceConfig.subject.iriJson );
+            String v = vals.isEmpty() ? null : vals.get( 0 );
+            if ( v != null ) {
+                iri = resourceConfig.subject.iriFormat.replace( "${value}", v );
+            }
+        }
         if ( iri == null && resourceConfig.subject.iriJson != null ) {
-            List<String> vals = finder.list( resourceConfig.subject.iriJson );
+            List<String> vals = listScopedOrRoot( finder, resourceConfig.subject.iriJson );
             iri = vals.isEmpty() ? null : vals.get( 0 );
         }
-
-        return ( iri == null ) ? model.createResource() : model.createResource( iri );
+        return ( iri == null || iri.isBlank() ) ? model.createResource() : model.createResource( iri );
     }
 
     private void addProperty(Model model, Resource subject, JaywayJsonFinder finder, ValueSource valueSource) {
@@ -71,7 +83,6 @@ public class ResourceMapper {
             return;
         }
         Property property = model.createProperty( predicateIri );
-
         for ( RDFNode rdfNode : resolveObjects( model, finder, valueSource ) ) {
             subject.addProperty( property, rdfNode );
         }
@@ -81,21 +92,19 @@ public class ResourceMapper {
         switch ( valueSource.as ) {
             case "node-ref":
                 return Collections.singletonList( buildNodeRef( model, finder, valueSource ) );
-
             case "iri":
                 return valuesFromSource( finder, valueSource ).stream()
-                                                     .map( applyMapIfAny( valueSource ) )
-                                                     .filter( Objects::nonNull )
-                                                     .map( model::createResource )
-                                                     .collect( Collectors.toList() );
-
+                                                              .map( applyMapIfAny( valueSource ) )
+                                                              .filter( Objects::nonNull )
+                                                              .map( model::createResource )
+                                                              .collect( Collectors.toList() );
             case "literal":
             default:
                 return valuesFromSource( finder, valueSource ).stream()
-                                                     .map( applyMapIfAny( valueSource ) )
-                                                     .filter( Objects::nonNull )
-                                                     .map( val -> literal( model, val, valueSource.lang, valueSource.datatype ) )
-                                                     .collect( Collectors.toList() );
+                                                              .map( applyMapIfAny( valueSource ) )
+                                                              .filter( Objects::nonNull )
+                                                              .map( val -> literal( model, val, valueSource.lang, valueSource.datatype ) )
+                                                              .collect( Collectors.toList() );
         }
     }
 
@@ -104,14 +113,10 @@ public class ResourceMapper {
         if ( nt == null ) {
             return model.createResource(); // bnode
         }
-
-        Resource r = "iri".equals( nt.kind ) && nt.iriConst != null ? model.createResource( nt.iriConst ) : model.createResource(); // bnode
-
+        Resource r = "iri".equals( nt.kind ) && nt.iriConst != null ? model.createResource( nt.iriConst ) : model.createResource();
         if ( nt.type != null ) {
             r.addProperty( RDF.type, model.createResource( prefixes.expand( nt.type ) ) );
         }
-
-        // Node’s internal properties (can be const or JSONPath)
         nt.props.forEach( (pid, pvs) -> {
             Property p = model.createProperty( prefixes.expand( pvs.predicate ) );
             for ( RDFNode obj : resolveObjects( model, finder, pvs ) ) {
@@ -125,16 +130,24 @@ public class ResourceMapper {
         if ( valueSource.constValue != null ) {
             return Collections.singletonList( valueSource.constValue );
         }
-
         if ( valueSource.json != null ) {
-            List<String> vals = finder.list( valueSource.json );
+            List<String> vals = listScopedOrRoot( finder, valueSource.json );
             if ( valueSource.multi ) {
                 return vals;
             }
             return vals.isEmpty() ? Collections.emptyList() : Collections.singletonList( vals.get( 0 ) );
         }
-
         return Collections.emptyList();
+    }
+
+    /**
+     * If JSONPath starts with "$$", query original root; else, current scope.
+     */
+    private List<String> listScopedOrRoot(JaywayJsonFinder finder, String jsonPath) {
+        if ( jsonPath != null && jsonPath.startsWith( "$$" ) ) {
+            return finder.listRoot( jsonPath.substring( 1 ) ); // strip one '$'
+        }
+        return finder.list( jsonPath );
     }
 
     private Function<String, String> applyMapIfAny(ValueSource vs) {
@@ -143,7 +156,7 @@ public class ResourceMapper {
                 return null;
             }
             if ( !vs.map.isEmpty() ) {
-                return vs.map.getOrDefault( s, null ); // drop if unmapped
+                return vs.map.getOrDefault( s, null );
             }
             return s;
         };

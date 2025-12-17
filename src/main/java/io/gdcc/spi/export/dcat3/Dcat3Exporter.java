@@ -1,3 +1,4 @@
+
 package io.gdcc.spi.export.dcat3;
 
 import static io.gdcc.spi.export.dcat3.config.loader.FileResolver.resolveElementFile;
@@ -5,7 +6,9 @@ import static io.gdcc.spi.export.dcat3.config.loader.FileResolver.resolveElement
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -14,6 +17,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auto.service.AutoService;
+
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
@@ -49,50 +53,26 @@ public class Dcat3Exporter implements Exporter {
         }
     }
 
-    /*
-     * The name of the format it creates. If this format is already provided by a
-     * built-in exporter, this Exporter will override the built-in one. (Note that
-     * exports are cached, so existing metadata export files are not updated
-     * immediately.)
-     */
     @Override
     public String getFormatName() {
         return "dcat3";
     }
 
-    /**
-     * The display name shown in the UI
-     *
-     * @param locale
-     */
     @Override
     public String getDisplayName(Locale locale) {
-        // This example includes the language in the name to demonstrate that locale is
-        // available. A production exporter would instead use the locale to generate an
-        // appropriate translation.
         return "DCAT-3";
     }
 
-    /**
-     * Whether the exported format should be available as an option for Harvesting
-     */
     @Override
     public Boolean isHarvestable() {
         return true;
     }
 
-    /**
-     * Whether the exported format should be available for download in the UI and API
-     */
     @Override
     public Boolean isAvailableToUsers() {
         return true;
     }
 
-    /**
-     * Defines the mime type of the exported format - used when metadata is downloaded, i.e. to
-     * trigger an appropriate viewer in the user's browser.
-     */
     @Override
     public String getMediaType() {
         // Use root.outputFormat
@@ -129,7 +109,7 @@ public class Dcat3Exporter implements Exporter {
 
             // Build each element
             Map<String, Model> models = new LinkedHashMap<>();
-            Map<String, Resource> subjects = new LinkedHashMap<>();
+            Map<String, List<Resource>> subjects = new LinkedHashMap<>();
             Prefixes prefixes = new Prefixes( root.prefixes );
 
             for ( Element element : root.elements ) {
@@ -140,14 +120,16 @@ public class Dcat3Exporter implements Exporter {
                     ResourceMapper resourceMapper = new ResourceMapper( resourceConfig, prefixes, element.typeCurieOrIri );
                     Model model = resourceMapper.build( jaywayJsonFinder );
 
-                    // Remember model & try to locate the subject by rdf:type
+                    // Collect all subjects by rdf:type
                     String typeIri = prefixes.expand( element.typeCurieOrIri );
-                    ResIterator it = model.listResourcesWithProperty( RDF.type, model.createResource( typeIri ) );
-                    Resource subj = it.hasNext() ? it.next() : null;
-
+                    ResIterator it = model.listResourcesWithProperty( RDF.type, model.createResource(typeIri) );
+                    List<Resource> subjectList = new ArrayList<>();
+                    while (it.hasNext()) {
+                        subjectList.add(it.next());
+                    }
                     models.put( element.id, model );
-                    if ( subj != null ) {
-                        subjects.put( element.id, subj );
+                    if ( !subjectList.isEmpty() ) {
+                        subjects.put( element.id, subjectList );
                     }
                 }
             }
@@ -157,16 +139,19 @@ public class Dcat3Exporter implements Exporter {
             model.setNsPrefixes( prefixes.jena() );
             models.values().forEach( model::add );
 
-            // Apply relations from root
+            // Apply relations from root (n:m)
             for ( Relation relation : root.relations ) {
-                Resource subject = subjects.get( relation.subjectElementId );
-                Resource objectElementId = subjects.get( relation.objectElementId );
-                if ( subject == null || objectElementId == null ) {
+                List<Resource> subjList = subjects.get( relation.subjectElementId );
+                List<Resource> objList  = subjects.get( relation.objectElementId );
+                if (subjList == null || subjList.isEmpty() || objList == null || objList.isEmpty()) {
                     continue; // could log a warning based on r.cardinality
                 }
-
                 Property property = model.createProperty( prefixes.expand( relation.predicateCurieOrIri ) );
-                model.add( subject, property, objectElementId );
+                for (Resource s : subjList) {
+                    for (Resource o : objList) {
+                        model.add(s, property, o);
+                    }
+                }
             }
 
             // Serialize in the configured format
@@ -182,11 +167,9 @@ public class Dcat3Exporter implements Exporter {
                     model.write( outputStream, "TURTLE" );
                     break;
             }
-
         }
         catch ( Throwable t ) {
             throw new ExportException( "DCAT export failed", t );
         }
     }
-
 }
