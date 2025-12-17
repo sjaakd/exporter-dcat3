@@ -62,8 +62,8 @@ class Dcat3ExporterTest {
         assertThat( exporter.getDisplayName( Locale.ROOT ) ).isEqualTo( "DCAT-3" );
         assertThat( exporter.isAvailableToUsers() ).isTrue();
         assertThat( exporter.isHarvestable() ).isTrue();
-        assertThat( exporter.getMediaType() ).isEqualTo(  "text/turtle" );
-//        assertThat( exporter.getMediaType() ).isEqualTo(  "application/rdf+xml" );
+     //   assertThat( exporter.getMediaType() ).isEqualTo(  "text/turtle" );
+        assertThat( exporter.getMediaType() ).isEqualTo(  "application/rdf+xml" );
 
         // -- action test export function
         ByteArrayOutputStream out = new ByteArrayOutputStream();

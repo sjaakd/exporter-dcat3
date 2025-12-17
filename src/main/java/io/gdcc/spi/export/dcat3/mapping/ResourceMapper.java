@@ -64,15 +64,15 @@ public class ResourceMapper {
             iri = resourceConfig.subject.iriTemplate;
         }
         if ( iri == null && resourceConfig.subject.iriFormat != null && resourceConfig.subject.iriJson != null ) {
-            List<String> vals = listScopedOrRoot( finder, resourceConfig.subject.iriJson );
-            String v = vals.isEmpty() ? null : vals.get( 0 );
-            if ( v != null ) {
-                iri = resourceConfig.subject.iriFormat.replace( "${value}", v );
+            List<String> values = listScopedOrRoot( finder, resourceConfig.subject.iriJson );
+            String value = values.isEmpty() ? null : values.get( 0 );
+            if ( value != null ) {
+                iri = resourceConfig.subject.iriFormat.replace( "${value}", value );
             }
         }
         if ( iri == null && resourceConfig.subject.iriJson != null ) {
-            List<String> vals = listScopedOrRoot( finder, resourceConfig.subject.iriJson );
-            iri = vals.isEmpty() ? null : vals.get( 0 );
+            List<String> values = listScopedOrRoot( finder, resourceConfig.subject.iriJson );
+            iri = values.isEmpty() ? null : values.get( 0 );
         }
         return ( iri == null || iri.isBlank() ) ? model.createResource() : model.createResource( iri );
     }
@@ -95,6 +95,7 @@ public class ResourceMapper {
             case "iri":
                 return valuesFromSource( finder, valueSource ).stream()
                                                               .map( applyMapIfAny( valueSource ) )
+                                                              .map( applyFormatIfAny( valueSource ) )
                                                               .filter( Objects::nonNull )
                                                               .map( model::createResource )
                                                               .collect( Collectors.toList() );
@@ -102,6 +103,7 @@ public class ResourceMapper {
             default:
                 return valuesFromSource( finder, valueSource ).stream()
                                                               .map( applyMapIfAny( valueSource ) )
+                                                              .map( applyFormatIfAny( valueSource ) )
                                                               .filter( Objects::nonNull )
                                                               .map( val -> literal( model, val, valueSource.lang, valueSource.datatype ) )
                                                               .collect( Collectors.toList() );
@@ -109,21 +111,21 @@ public class ResourceMapper {
     }
 
     private RDFNode buildNodeRef(Model model, JaywayJsonFinder finder, ValueSource valueSource) {
-        NodeTemplate nt = resourceConfig.nodes.get( valueSource.nodeRef );
-        if ( nt == null ) {
+        NodeTemplate nodeTemplate = resourceConfig.nodes.get( valueSource.nodeRef );
+        if ( nodeTemplate == null ) {
             return model.createResource(); // bnode
         }
-        Resource r = "iri".equals( nt.kind ) && nt.iriConst != null ? model.createResource( nt.iriConst ) : model.createResource();
-        if ( nt.type != null ) {
-            r.addProperty( RDF.type, model.createResource( prefixes.expand( nt.type ) ) );
+        Resource resource = "iri".equals( nodeTemplate.kind ) && nodeTemplate.iriConst != null ? model.createResource( nodeTemplate.iriConst ) : model.createResource();
+        if ( nodeTemplate.type != null ) {
+            resource.addProperty( RDF.type, model.createResource( prefixes.expand( nodeTemplate.type ) ) );
         }
-        nt.props.forEach( (pid, pvs) -> {
-            Property p = model.createProperty( prefixes.expand( pvs.predicate ) );
-            for ( RDFNode obj : resolveObjects( model, finder, pvs ) ) {
-                r.addProperty( p, obj );
+        nodeTemplate.props.forEach( (propertyId, propertyValueSource ) -> {
+            Property property = model.createProperty( prefixes.expand( propertyValueSource .predicate ) );
+            for ( RDFNode obj : resolveObjects( model, finder, propertyValueSource  ) ) {
+                resource.addProperty( property, obj );
             }
         } );
-        return r;
+        return resource;
     }
 
     private List<String> valuesFromSource(JaywayJsonFinder finder, ValueSource valueSource) {
@@ -131,11 +133,11 @@ public class ResourceMapper {
             return Collections.singletonList( valueSource.constValue );
         }
         if ( valueSource.json != null ) {
-            List<String> vals = listScopedOrRoot( finder, valueSource.json );
+            List<String> values = listScopedOrRoot( finder, valueSource.json );
             if ( valueSource.multi ) {
-                return vals;
+                return values;
             }
-            return vals.isEmpty() ? Collections.emptyList() : Collections.singletonList( vals.get( 0 ) );
+            return values.isEmpty() ? Collections.emptyList() : Collections.singletonList( values.get( 0 ) );
         }
         return Collections.emptyList();
     }
@@ -150,13 +152,25 @@ public class ResourceMapper {
         return finder.list( jsonPath );
     }
 
-    private Function<String, String> applyMapIfAny(ValueSource vs) {
+    private Function<String, String> applyMapIfAny(ValueSource valueSource) {
         return s -> {
             if ( s == null ) {
                 return null;
             }
-            if ( !vs.map.isEmpty() ) {
-                return vs.map.getOrDefault( s, null );
+            if ( !valueSource.map.isEmpty() ) {
+                return valueSource.map.getOrDefault( s, null );
+            }
+            return s;
+        };
+    }
+
+    private Function<String, String> applyFormatIfAny(ValueSource valueSource) {
+        return s -> {
+            if ( s == null )
+                return null;
+            if ( valueSource.format != null && !valueSource.format.isBlank() ) {
+                // simple ${value} substitution
+                return valueSource.format.replace( "${value}", s );
             }
             return s;
         };
@@ -173,4 +187,5 @@ public class ResourceMapper {
         }
         return model.createLiteral( value );
     }
+
 }

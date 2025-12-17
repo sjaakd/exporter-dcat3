@@ -37,6 +37,9 @@ public final class Util {
             case "when":
                 valueSource.when = value;
                 break;
+            case "format":
+                valueSource.format = value;
+                break;
             default:
                 if ( keyTail.startsWith( "map." ) ) {
                     String k = keyTail.substring( "map.".length() );

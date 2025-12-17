@@ -12,6 +12,7 @@ public class ValueSource {
     public String constValue;     // const
     public String nodeRef;        // node id (for node-ref)
     public boolean multi = false; // expand arrays or split by comma
+    public String format;
     public String when;           // optional guard expression (future)
     public Map<String, String> map = new LinkedHashMap<>(); // value mapping
 }
