@@ -18,11 +18,11 @@ class ExportDataTest {
 
         // -- verify
         assertThat(result).isNotNull();
-        assertThat(result.getDatasetJson()).isNotNull();
-        assertThat(result.getDataCiteXml()).isNotNull();
-        assertThat(result.getDatasetORE()).isNotNull();
-        assertThat(result.getDatasetFileDetails()).isNotNull();
-        assertThat(result.getDatasetSchemaDotOrg()).isNotNull();
+        assertThat(result.datasetJson()).isNotNull();
+        assertThat(result.dataCiteXml()).isNotNull();
+        assertThat(result.datasetORE()).isNotNull();
+        assertThat(result.datasetFileDetails()).isNotNull();
+        assertThat(result.datasetSchemaDotOrg()).isNotNull();
     }
 
     @Test
@@ -35,10 +35,10 @@ class ExportDataTest {
 
         // -- verify
         assertThat(result).isNotNull();
-        assertThat(result.getDatasetJson()).isNotNull();
-        assertThat(result.getDataCiteXml()).isNotNull();
-        assertThat(result.getDatasetORE()).isNotNull();
-        assertThat(result.getDatasetFileDetails()).isNotNull();
-        assertThat(result.getDatasetSchemaDotOrg()).isNotNull();
+        assertThat(result.datasetJson()).isNotNull();
+        assertThat(result.dataCiteXml()).isNotNull();
+        assertThat(result.datasetORE()).isNotNull();
+        assertThat(result.datasetFileDetails()).isNotNull();
+        assertThat(result.datasetSchemaDotOrg()).isNotNull();
     }
 }

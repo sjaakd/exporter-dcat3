@@ -7,49 +7,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import io.gdcc.spi.export.ExportDataProvider;
 
-public class ExportData {
-
-    private JsonNode datasetJson; // native JSON tree
-    private JsonNode datasetORE; // ORE JSON tree
-    private JsonNode datasetFileDetails; // array JSON tree
-    private JsonNode datasetSchemaDotOrg; // schema.org JSON tree
-    private JsonNode dataCiteXml; // DataCite as JSON tree (converted from XML
-
-    public ExportData(
-            JsonNode datasetJson,
-            JsonNode datasetORE,
-            JsonNode datasetFileDetails,
-            JsonNode datasetSchemaDotOrg,
-            JsonNode dataCiteXml) {
-        this.datasetJson = datasetJson;
-        this.datasetORE = datasetORE;
-        this.datasetFileDetails = datasetFileDetails;
-        this.datasetSchemaDotOrg = datasetSchemaDotOrg;
-        this.dataCiteXml = dataCiteXml;
-    }
+/**
+ * @param datasetJson native JSON tree
+ * @param datasetORE ORE JSON tree
+ * @param datasetFileDetails array JSON tree
+ * @param datasetSchemaDotOrg schema.org JSON tree
+ * @param dataCiteXml DataCite as JSON tree (converted from XML
+ */
+public record ExportData(
+        JsonNode datasetJson,
+        JsonNode datasetORE,
+        JsonNode datasetFileDetails,
+        JsonNode datasetSchemaDotOrg,
+        JsonNode dataCiteXml) {
 
     public static ExportDataBuilder builder() {
         return new ExportDataBuilder();
-    }
-
-    public JsonNode getDatasetJson() {
-        return datasetJson;
-    }
-
-    public JsonNode getDatasetORE() {
-        return datasetORE;
-    }
-
-    public JsonNode getDatasetFileDetails() {
-        return datasetFileDetails;
-    }
-
-    public JsonNode getDatasetSchemaDotOrg() {
-        return datasetSchemaDotOrg;
-    }
-
-    public JsonNode getDataCiteXml() {
-        return dataCiteXml;
     }
 
     public static class ExportDataBuilder {

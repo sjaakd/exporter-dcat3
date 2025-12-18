@@ -61,20 +61,19 @@ public class ResourceConfigLoader {
                                 return template;
                             });
 
-            if (tail.equals("kind")) {
-                nodeTemplate.kind = property.getProperty(propertyName);
-            } else if (tail.equals("iri.const")) {
-                nodeTemplate.iriConst = property.getProperty(propertyName);
-            } else if (tail.equals("type")) {
-                nodeTemplate.type = property.getProperty(propertyName);
-            } else {
-                Matcher nodePropertyPatternMatcher = NODE_PROPERTY_PATTERN.matcher(tail);
-                if (nodePropertyPatternMatcher.matches()) {
-                    String propId = nodePropertyPatternMatcher.group(1);
-                    String propTail = nodePropertyPatternMatcher.group(2);
-                    ValueSource valueSource =
-                            nodeTemplate.props.computeIfAbsent(propId, _k -> new ValueSource());
-                    applyValue(valueSource, propTail, property.getProperty(propertyName));
+            switch (tail) {
+                case "kind" -> nodeTemplate.kind = property.getProperty(propertyName);
+                case "iri.const" -> nodeTemplate.iriConst = property.getProperty(propertyName);
+                case "type" -> nodeTemplate.type = property.getProperty(propertyName);
+                default -> {
+                    Matcher nodePropertyPatternMatcher = NODE_PROPERTY_PATTERN.matcher(tail);
+                    if (nodePropertyPatternMatcher.matches()) {
+                        String propId = nodePropertyPatternMatcher.group(1);
+                        String propTail = nodePropertyPatternMatcher.group(2);
+                        ValueSource valueSource =
+                                nodeTemplate.props.computeIfAbsent(propId, _k -> new ValueSource());
+                        applyValue(valueSource, propTail, property.getProperty(propertyName));
+                    }
                 }
             }
         }

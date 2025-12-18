@@ -93,25 +93,21 @@ public class ResourceMapper {
 
     private List<RDFNode> resolveObjects(
             Model model, JaywayJsonFinder finder, ValueSource valueSource) {
-        switch (valueSource.as) {
-            case "node-ref":
-                return Collections.singletonList(buildNodeRef(model, finder, valueSource));
-            case "iri":
-                return valuesFromSource(finder, valueSource).stream()
-                        .map(applyMapIfAny(valueSource))
-                        .map(applyFormatIfAny(valueSource, finder)) // apply format & placeholders
-                        .filter(Objects::nonNull)
-                        .map(model::createResource)
-                        .collect(Collectors.toList());
-            case "literal":
-            default:
-                return valuesFromSource(finder, valueSource).stream()
-                        .map(applyMapIfAny(valueSource))
-                        .map(applyFormatIfAny(valueSource, finder)) // apply format & placeholders
-                        .filter(Objects::nonNull)
-                        .map(val -> literal(model, val, valueSource.lang, valueSource.datatype))
-                        .collect(Collectors.toList());
-        }
+        return switch (valueSource.as) {
+            case "node-ref" -> Collections.singletonList(buildNodeRef(model, finder, valueSource));
+            case "iri" -> valuesFromSource(finder, valueSource).stream()
+                    .map(applyMapIfAny(valueSource))
+                    .map(applyFormatIfAny(valueSource, finder)) // apply format & placeholders
+                    .filter(Objects::nonNull)
+                    .map(model::createResource)
+                    .collect(Collectors.toList());
+            default -> valuesFromSource(finder, valueSource).stream()
+                    .map(applyMapIfAny(valueSource))
+                    .map(applyFormatIfAny(valueSource, finder)) // apply format & placeholders
+                    .filter(Objects::nonNull)
+                    .map(val -> literal(model, val, valueSource.lang, valueSource.datatype))
+                    .collect(Collectors.toList());
+        };
     }
 
     private RDFNode buildNodeRef(Model model, JaywayJsonFinder finder, ValueSource valueSource) {
@@ -230,7 +226,7 @@ public class ResourceMapper {
                 break;
             }
             String token = format.substring(open + 2, close);
-            String replacement = null;
+            String replacement;
             if (token.startsWith("$$")) {
                 List<String> vals = listScopedOrRoot(finder, token); // listScopedOrRoot handles $$
                 replacement = vals.isEmpty() ? "" : vals.get(0);

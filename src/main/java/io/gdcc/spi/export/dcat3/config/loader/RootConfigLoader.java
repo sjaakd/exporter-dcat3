@@ -25,7 +25,7 @@ public final class RootConfigLoader {
      * relative, relative to user home or resource directory.
      *
      * @return RootConfig
-     * @throws IOException
+     * @throws IOException when loading fails
      */
     public static RootConfig load() throws IOException {
         String rootProperty = System.getProperty(SYS_PROP);
