@@ -156,6 +156,48 @@ nodes.checksum.props.checksumValue.json      = $.checksum.value
 - If a JSONPath fails, enable tracing and check the **scope** you are in; ensure you use `$` vs `$$` appropriately.
 - When linking elements (dataset → distribution), ensure the **subjects are minted** (absolute IRIs) and relations are applied after model merging.
 
+## 6. Validation
+
+The following validations are carried out:
+
+### Prefixes
+
+- Empty prefix keys / invalid IRIs → ERROR
+- Missing prefixes → WARNING
+
+
+### Elements
+
+- Missing id, typeCurieOrIri, file → ERROR
+- typeCurieOrIri not CURIE/IRI or unknown CURIE prefix → ERROR
+
+
+### Relations
+
+- Missing subject/object/predicate → ERROR
+- Predicate not CURIE/IRI or unknown prefix → ERROR
+
+
+### Subject
+
+- No minting strategy at all (const/template/json) → WARNING
+- iriFormat provided without template or json → ERROR
+
+
+### ValueSource
+
+- Missing predicate → ERROR
+- Bad as value → ERROR
+- node-ref without nodeRef → ERROR
+- No source (json|const|json.*|node) → WARNING
+
+
+### NodeTemplate
+
+- Empty id → ERROR
+- kind must be bnode or iri → ERROR
+- type must be CURIE/IRI; check prefixes → ERROR
+
 ---
 
 *This mechanism is designed to be declarative, composable, and profile-friendly for DCAT/DCAT‑AP exports.*

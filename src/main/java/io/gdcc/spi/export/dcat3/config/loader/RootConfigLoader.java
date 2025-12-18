@@ -73,7 +73,7 @@ public final class RootConfigLoader {
             elements.add(new Element(id, type, file));
         }
 
-        // relations: relation.<name>.{subject,predicate,object,cardinality}
+        // relations: relation.<name>.{subject,predicate,object}
         List<Relation> relations = new ArrayList<>();
         for (String key : properties.stringPropertyNames()) {
             Matcher matcher = RELATION_PREDICATE_PATTERN.matcher(key);
@@ -84,8 +84,7 @@ public final class RootConfigLoader {
             String subject = properties.getProperty(base + ".subject");
             String predicate = properties.getProperty(base + ".predicate");
             String object = properties.getProperty(base + ".object");
-            String cardinality = properties.getProperty(base + ".cardinality");
-            Relation relation = new Relation(subject, predicate, object, cardinality);
+            Relation relation = new Relation(subject, predicate, object);
             relations.add(relation);
         }
 

@@ -21,6 +21,12 @@ The system is consciously split into three layers that mirror the flow from Data
      - `ResourceMapper` — builds a `Model` for each configured DCAT element, asserts `rdf:type`, sets properties, expands CURIEs using `Prefixes`, and produces RDF resources (subjects).
    - Outcome: One `Model` per element plus subject collections identified by `rdf:type`.
 
+3. **Validation (Model Validation)**
+    - Purpose: Aid the user on providing correct configuration data with  meaningful messages
+    - Main components:
+      - `Validators` - calls all the specific validators
+    - Outcome: Valid configuration (or at least reasonably valid), circumventing problems later.
+
 3. **Writing (Serialization)**
    - Purpose: Merge element models, apply configured **relations** (n:m), then serialize the combined model.
    - Main components:

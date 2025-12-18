@@ -17,6 +17,10 @@ import io.gdcc.spi.export.dcat3.config.model.Element;
 import io.gdcc.spi.export.dcat3.config.model.Relation;
 import io.gdcc.spi.export.dcat3.config.model.ResourceConfig;
 import io.gdcc.spi.export.dcat3.config.model.RootConfig;
+import io.gdcc.spi.export.dcat3.config.validate.Severity;
+import io.gdcc.spi.export.dcat3.config.validate.ValidationMessage;
+import io.gdcc.spi.export.dcat3.config.validate.ValidationReport;
+import io.gdcc.spi.export.dcat3.config.validate.Validators;
 import io.gdcc.spi.export.dcat3.mapping.JaywayJsonFinder;
 import io.gdcc.spi.export.dcat3.mapping.Prefixes;
 import io.gdcc.spi.export.dcat3.mapping.ResourceMapper;
@@ -27,6 +31,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -80,9 +85,19 @@ public abstract class Dcat3ExporterBase implements Exporter {
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream)
             throws ExportException {
         try {
+            // --- Root-level validation before any export work ---
+            ValidationReport rootReport = Validators.validateRoot(root);
+            for (ValidationMessage message : rootReport.messages()) {
+                logger.log(
+                        message.severity() == Severity.ERROR ? Level.SEVERE : Level.WARNING,
+                        message.toString());
+            }
+            if (rootReport.hasErrors()) {
+                throw new ExportException("DCAT export aborted: invalid root configuration");
+            }
+
             ExportData exportData = ExportData.builder().provider(dataProvider).build();
             ObjectMapper mapper = new ObjectMapper();
-
             if (root.trace()) {
                 try {
                     String json =
@@ -102,9 +117,14 @@ public abstract class Dcat3ExporterBase implements Exporter {
             Map<String, List<Resource>> subjects = new LinkedHashMap<>();
             Prefixes prefixes = new Prefixes(root.prefixes());
 
+            // Collect ResourceConfig per element for validation
+            Map<String, ResourceConfig> elementConfigs = new LinkedHashMap<>();
+
             for (Element element : root.elements()) {
                 try (InputStream in = resolveElementFile(root.baseDir(), element.file())) {
                     ResourceConfig resourceConfig = new ResourceConfigLoader().load(in);
+                    elementConfigs.put(element.id(), resourceConfig);
+
                     ResourceMapper resourceMapper =
                             new ResourceMapper(resourceConfig, prefixes, element.typeCurieOrIri());
                     Model elementModel = resourceMapper.build(jaywayJsonFinder);
@@ -126,6 +146,18 @@ public abstract class Dcat3ExporterBase implements Exporter {
                 }
             }
 
+            // --- Cross-validation of root + all element ResourceConfigs ---
+            ValidationReport report = Validators.validateAll(root, elementConfigs);
+            for (ValidationMessage message : report.messages()) {
+                logger.log(
+                        message.severity() == Severity.ERROR ? Level.SEVERE : Level.WARNING,
+                        message.toString());
+            }
+            if (report.hasErrors()) {
+                throw new ExportException(
+                        "DCAT export aborted: validation errors in element configs");
+            }
+
             // Merge all element models
             Model model = ModelFactory.createDefaultModel();
             model.setNsPrefixes(prefixes.jena());
@@ -139,7 +171,7 @@ public abstract class Dcat3ExporterBase implements Exporter {
                         || subjList.isEmpty()
                         || objList == null
                         || objList.isEmpty()) {
-                    continue; // nothing to link; could log based on cardinality in relation
+                    continue;
                 }
                 Property property =
                         model.createProperty(prefixes.expand(relation.predicateCurieOrIri()));
