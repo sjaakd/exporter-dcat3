@@ -8,7 +8,6 @@ It covers **root config**, **resource config** (elements), **scoping**, **value 
 Defines output format, prefixes, elements, and relations.
 
 ```properties
-output.format = rdfxml            # or turtle | jsonld
 trace.enabled = false
 
 # Prefixes for CURIEs used in configs

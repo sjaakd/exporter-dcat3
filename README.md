@@ -6,9 +6,7 @@ This is a DCAT3 metadata exporter for [Dataverse](https://dataverse.org/). It im
 Currently, the exporter is in a prototype stage and build upon DCAT 3.0-AP-NL (the Dutch profile of DCAT3). A tab-separed-file is included to reflect the mapping that the Geological Survey of the Netherlands (TNO) used to map Dataverse metadata to DCAT3. This
 work is not finalized. Checkout the config directory. 
 
-It is all very much work in progress. The idea is to make the exporter fully configurable by means of a micro profile in which you can specify a mapping from the ExportData object to DCAT3 fields and also specify the kind of DCAT to produce. Apache Jena is used to create the RDF output. Shading was an issue. 
-
-Ideas are sketched here: [Ideas](IDEAS.md)
+A first draft of user Documentation can be found here: [documentation](DOCUMENTATION.md)
 
 ## Installation
 

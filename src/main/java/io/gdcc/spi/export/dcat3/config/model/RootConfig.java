@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 public class RootConfig {
-    public String outputFormat = "turtle";
     public boolean trace = false;
 
     public Map<String, String> prefixes = new LinkedHashMap<>();

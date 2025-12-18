@@ -200,6 +200,7 @@
                             <artifactSet>
                                 <includes>
                                     <include>org.apache.jena:*</include>
+                                    <include>com.apicatalog:*</include>
                                     <include>org.apache.thrift:libthrift</include>
                                     <include>com.jayway.jsonpath:json-path</include>
                                 </includes>
@@ -210,6 +211,10 @@
                                 <relocation>
                                     <pattern>org.apache.jena</pattern>
                                     <shadedPattern>dcat3.shaded.org.apache.jena</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.apicatalog</pattern>
+                                    <shadedPattern>dcat3.shaded.com.apicatalog</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.jayway.jsonpath</pattern>

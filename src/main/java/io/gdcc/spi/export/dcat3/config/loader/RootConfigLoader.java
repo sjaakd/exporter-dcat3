@@ -46,7 +46,6 @@ public final class RootConfigLoader {
 
     private static RootConfig parse(Properties properties) {
         RootConfig rootConfig = new RootConfig();
-        rootConfig.outputFormat = properties.getProperty( "dcat.output.format", "turtle" );
         rootConfig.trace = Boolean.parseBoolean( properties.getProperty( "dcat.trace.enabled", "false" ) );
 
         // prefixes.*
