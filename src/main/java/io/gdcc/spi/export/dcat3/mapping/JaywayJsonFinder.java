@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.JsonPathException;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.ReadContext;
 import com.jayway.jsonpath.TypeRef;
@@ -58,11 +59,17 @@ public class JaywayJsonFinder {
     }
 
     private List<String> listInternal(ReadContext context, String jsonPath) {
-        if (jsonPath == null || jsonPath.isEmpty()) {
+        if (jsonPath == null || jsonPath.trim().isEmpty()) {
             logger.warning("jsonPath is null or empty");
             return Collections.emptyList();
         }
-        List<Object> raw = context.read(jsonPath, new TypeRef<List<Object>>() {});
+        List<Object> raw;
+        try {
+            raw = context.read(jsonPath, new TypeRef<List<Object>>() {});
+        } catch (JsonPathException ex) {
+            // Invalid or unparsable JsonPath -> behave as "no matches"
+            return Collections.emptyList();
+        }
         if (raw == null || raw.isEmpty()) {
             return Collections.emptyList();
         }
@@ -83,10 +90,15 @@ public class JaywayJsonFinder {
 
     /** Return matching subtrees as JsonNode list from the current scope. */
     public List<JsonNode> nodes(String jsonPath) {
-        if (jsonPath == null || jsonPath.isEmpty()) {
+        if (jsonPath == null || jsonPath.trim().isEmpty()) {
             return Collections.emptyList();
         }
-        List<Object> raw = ctx.read(jsonPath, new TypeRef<List<Object>>() {});
+        List<Object> raw;
+        try {
+            raw = ctx.read(jsonPath, new TypeRef<List<Object>>() {});
+        } catch (JsonPathException ex) {
+            return Collections.emptyList();
+        }
         if (raw == null || raw.isEmpty()) {
             return Collections.emptyList();
         }

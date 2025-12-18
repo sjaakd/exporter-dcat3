@@ -1,11 +1,9 @@
-package io.gdcc.spi.export.dcat3.config;
+package io.gdcc.spi.export.dcat3.config.loader;
 
 import static io.gdcc.spi.export.dcat3.config.loader.FileResolver.resolveElementFile;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.gdcc.spi.export.dcat3.config.loader.ResourceConfigLoader;
-import io.gdcc.spi.export.dcat3.config.loader.RootConfigLoader;
 import io.gdcc.spi.export.dcat3.config.model.ResourceConfig;
 import io.gdcc.spi.export.dcat3.config.model.RootConfig;
 import io.gdcc.spi.export.dcat3.config.model.ValueSource;

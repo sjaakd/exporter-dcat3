@@ -10,6 +10,10 @@ public final class CurieIriUtils {
             return false;
         }
         String trimmed = value.trim();
+        if (trimmed.startsWith("mailto:")) {
+            // Minimal check: require a non-empty address after "mailto:"
+            return trimmed.length() > "mailto:".length();
+        }
         return trimmed.startsWith("http://")
                 || trimmed.startsWith("https://")
                 || trimmed.startsWith("urn:");
