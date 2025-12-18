@@ -6,7 +6,10 @@ This is a DCAT3 metadata exporter for [Dataverse](https://dataverse.org/). It im
 Currently, the exporter is in a prototype stage and build upon DCAT 3.0-AP-NL (the Dutch profile of DCAT3). A tab-separed-file is included to reflect the mapping that the Geological Survey of the Netherlands (TNO) used to map Dataverse metadata to DCAT3. This
 work is not finalized. Checkout the config directory. 
 
-A first draft of user Documentation can be found here: [documentation](DOCUMENTATION.md)
+* A first draft of user Documentation can be found here: [documentation](DOCUMENTATION.md)
+* The design can be found here: [design](DESIGN.md)
+* [License](LICENSE)
+* [Changelog](CHANGELOG.md)
 
 ## Installation
 
