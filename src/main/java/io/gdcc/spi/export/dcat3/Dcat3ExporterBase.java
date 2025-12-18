@@ -5,16 +5,6 @@ package io.gdcc.spi.export.dcat3;
 
 import static io.gdcc.spi.export.dcat3.config.loader.FileResolver.resolveElementFile;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.logging.Logger;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,31 +20,38 @@ import io.gdcc.spi.export.dcat3.config.model.RootConfig;
 import io.gdcc.spi.export.dcat3.mapping.JaywayJsonFinder;
 import io.gdcc.spi.export.dcat3.mapping.Prefixes;
 import io.gdcc.spi.export.dcat3.mapping.ResourceMapper;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.function.library.leviathan.log;
 import org.apache.jena.vocabulary.RDF;
 
 /**
  * Abstract base class for DCAT3 exporters.
- * <p>NOTE: This refactor removes any dependency on dcat.output.format from
- * the root configuration. Each concrete subclass decides its own media type
- * and serialization format.
+ *
+ * <p>NOTE: This refactor removes any dependency on dcat.output.format from the root configuration.
+ * Each concrete subclass decides its own media type and serialization format.
  */
 public abstract class Dcat3ExporterBase implements Exporter {
-    private static final Logger logger = Logger.getLogger( Dcat3ExporterBase.class.getCanonicalName() );
+    private static final Logger logger =
+            Logger.getLogger(Dcat3ExporterBase.class.getCanonicalName());
 
     protected RootConfig root;
 
     protected Dcat3ExporterBase() {
         try {
             this.root = RootConfigLoader.load();
-        }
-        catch ( IOException e ) {
-            logger.warning( "cannot read configuration: " + e.getMessage() );
+        } catch (IOException e) {
+            logger.warning("cannot read configuration: " + e.getMessage());
         }
     }
 
@@ -68,14 +65,10 @@ public abstract class Dcat3ExporterBase implements Exporter {
         return true;
     }
 
-    /**
-     * The MIME type advertised by this exporter.
-     */
+    /** The MIME type advertised by this exporter. */
     protected abstract String getMediaTypeValue();
 
-    /**
-     * The Jena writer name (e.g. "TURTLE", "JSON-LD", "RDF/XML").
-     */
+    /** The Jena writer name (e.g. "TURTLE", "JSON-LD", "RDF/XML"). */
     protected abstract String getJenaWriterName();
 
     @Override
@@ -84,78 +77,84 @@ public abstract class Dcat3ExporterBase implements Exporter {
     }
 
     @Override
-    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream)
+            throws ExportException {
         try {
-            ExportData exportData = ExportData.builder().provider( dataProvider ).build();
+            ExportData exportData = ExportData.builder().provider(dataProvider).build();
             ObjectMapper mapper = new ObjectMapper();
 
-            if ( root.trace ) {
+            if (root.trace) {
                 try {
-                    String json = mapper.writerWithDefaultPrettyPrinter()
-                                        .writeValueAsString( exportData );
-                    logger.info( json );
-                }
-                catch ( JsonProcessingException e ) {
-                    logger.warning( e.getMessage() );
+                    String json =
+                            mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
+                    logger.info(json);
+                } catch (JsonProcessingException e) {
+                    logger.warning(e.getMessage());
                     return; // don't continue if trace can't be produced
                 }
             }
 
-            JsonNode rootJson = mapper.valueToTree( exportData );
-            JaywayJsonFinder jaywayJsonFinder = new JaywayJsonFinder( rootJson );
+            JsonNode rootJson = mapper.valueToTree(exportData);
+            JaywayJsonFinder jaywayJsonFinder = new JaywayJsonFinder(rootJson);
 
             // Build each element
             Map<String, Model> models = new LinkedHashMap<>();
             Map<String, List<Resource>> subjects = new LinkedHashMap<>();
-            Prefixes prefixes = new Prefixes( root.prefixes );
+            Prefixes prefixes = new Prefixes(root.prefixes);
 
-            for ( Element element : root.elements ) {
-                try (InputStream in = resolveElementFile( root.baseDir, element.file )) {
-                    ResourceConfig resourceConfig = new ResourceConfigLoader().load( in );
-                    ResourceMapper resourceMapper = new ResourceMapper( resourceConfig, prefixes, element.typeCurieOrIri );
-                    Model elementModel = resourceMapper.build( jaywayJsonFinder );
+            for (Element element : root.elements) {
+                try (InputStream in = resolveElementFile(root.baseDir, element.file)) {
+                    ResourceConfig resourceConfig = new ResourceConfigLoader().load(in);
+                    ResourceMapper resourceMapper =
+                            new ResourceMapper(resourceConfig, prefixes, element.typeCurieOrIri);
+                    Model elementModel = resourceMapper.build(jaywayJsonFinder);
 
                     // Collect all subjects by rdf:type
-                    String typeIri = prefixes.expand( element.typeCurieOrIri );
-                    ResIterator it = elementModel.listResourcesWithProperty( RDF.type, elementModel.createResource( typeIri ) );
+                    String typeIri = prefixes.expand(element.typeCurieOrIri);
+                    ResIterator it =
+                            elementModel.listResourcesWithProperty(
+                                    RDF.type, elementModel.createResource(typeIri));
                     List<Resource> subjectList = new ArrayList<>();
-                    while ( it.hasNext() ) {
-                        subjectList.add( it.next() );
+                    while (it.hasNext()) {
+                        subjectList.add(it.next());
                     }
 
-                    models.put( element.id, elementModel );
-                    if ( !subjectList.isEmpty() ) {
-                        subjects.put( element.id, subjectList );
+                    models.put(element.id, elementModel);
+                    if (!subjectList.isEmpty()) {
+                        subjects.put(element.id, subjectList);
                     }
                 }
             }
 
             // Merge all element models
             Model model = ModelFactory.createDefaultModel();
-            model.setNsPrefixes( prefixes.jena() );
-            models.values().forEach( model::add );
+            model.setNsPrefixes(prefixes.jena());
+            models.values().forEach(model::add);
 
             // Apply relations from root (n:m)
-            for ( Relation relation : root.relations ) {
-                List<Resource> subjList = subjects.get( relation.subjectElementId );
-                List<Resource> objList = subjects.get( relation.objectElementId );
-                if ( subjList == null || subjList.isEmpty() || objList == null || objList.isEmpty() ) {
+            for (Relation relation : root.relations) {
+                List<Resource> subjList = subjects.get(relation.subjectElementId);
+                List<Resource> objList = subjects.get(relation.objectElementId);
+                if (subjList == null
+                        || subjList.isEmpty()
+                        || objList == null
+                        || objList.isEmpty()) {
                     continue; // nothing to link; could log based on cardinality in relation
                 }
-                Property property = model.createProperty( prefixes.expand( relation.predicateCurieOrIri ) );
-                for ( Resource s : subjList ) {
-                    for ( Resource o : objList ) {
-                        model.add( s, property, o );
+                Property property =
+                        model.createProperty(prefixes.expand(relation.predicateCurieOrIri));
+                for (Resource s : subjList) {
+                    for (Resource o : objList) {
+                        model.add(s, property, o);
                     }
                 }
             }
 
             // Serialize in the subclass-selected format
-            model.write( outputStream, getJenaWriterName() );
-        }
-        catch ( Throwable t ) {
-            logger.warning( t.getMessage() );
-            throw new ExportException( "DCAT export failed", t );
+            model.write(outputStream, getJenaWriterName());
+        } catch (Throwable t) {
+            logger.warning(t.getMessage());
+            throw new ExportException("DCAT export failed", t);
         }
     }
 }

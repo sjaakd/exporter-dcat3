@@ -7,7 +7,7 @@ import com.google.auto.service.AutoService;
 import io.gdcc.spi.export.Exporter;
 import java.util.Locale;
 
-@AutoService( Exporter.class )
+@AutoService(Exporter.class)
 public class Dcat3ExporterTurtle extends Dcat3ExporterBase {
     @Override
     public String getFormatName() {

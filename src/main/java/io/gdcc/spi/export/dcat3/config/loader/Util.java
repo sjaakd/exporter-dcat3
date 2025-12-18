@@ -1,4 +1,3 @@
-
 package io.gdcc.spi.export.dcat3.config.loader;
 
 import io.gdcc.spi.export.dcat3.config.model.ValueSource;
@@ -30,7 +29,7 @@ public final class Util {
                 valueSource.nodeRef = value;
                 break;
             case "multi":
-                valueSource.multi = Boolean.parseBoolean( value );
+                valueSource.multi = Boolean.parseBoolean(value);
                 break;
             case "when":
                 valueSource.when = value;
@@ -39,13 +38,12 @@ public final class Util {
                 valueSource.format = value;
                 break;
             default:
-                if ( keyTail.startsWith( "json." ) ) {
+                if (keyTail.startsWith("json.")) {
                     // Supports json.1, json.2, ...; keep declaration order
-                    valueSource.jsonPaths.add( value );
-                }
-                else if ( keyTail.startsWith( "map." ) ) {
-                    String k = keyTail.substring( "map.".length() );
-                    valueSource.map.put( k, value );
+                    valueSource.jsonPaths.add(value);
+                } else if (keyTail.startsWith("map.")) {
+                    String k = keyTail.substring("map.".length());
+                    valueSource.map.put(k, value);
                 }
         }
     }

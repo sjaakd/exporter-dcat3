@@ -13,8 +13,7 @@ public class RootConfig {
 
     public List<Element> elements = new ArrayList<>();
     public List<Relation> relations = new ArrayList<>();
-    /**
-     * Directory of the root file; used to resolve element files relative to it
-     */
+
+    /** Directory of the root file; used to resolve element files relative to it */
     public Path baseDir;
 }

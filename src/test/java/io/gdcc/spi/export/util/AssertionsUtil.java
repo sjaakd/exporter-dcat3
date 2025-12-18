@@ -9,11 +9,16 @@ public final class AssertionsUtil {
 
     private AssertionsUtil() {}
 
-    public static void assertValueSource(ValueSource vs,
-                                         String as, String predicate,
-                                         String lang, String datatype,
-                                         String json, String constValue,
-                                         String nodeRef, boolean multi) {
+    public static void assertValueSource(
+            ValueSource vs,
+            String as,
+            String predicate,
+            String lang,
+            String datatype,
+            String json,
+            String constValue,
+            String nodeRef,
+            boolean multi) {
         assertThat(vs).as("ValueSource should not be null").isNotNull();
         assertThat(vs.as).as("as").isEqualTo(as);
         assertThat(vs.predicate).as("predicate").isEqualTo(predicate);
@@ -25,8 +30,8 @@ public final class AssertionsUtil {
         assertThat(vs.multi).as("multi").isEqualTo(multi);
     }
 
-    public static void assertNodeTemplate(NodeTemplate nodeTemplate,
-                                          String id, String kind, String iriConst, String type) {
+    public static void assertNodeTemplate(
+            NodeTemplate nodeTemplate, String id, String kind, String iriConst, String type) {
         assertThat(nodeTemplate).as("NodeTemplate should not be null").isNotNull();
         assertThat(nodeTemplate.id).as("id").isEqualTo(id);
         assertThat(nodeTemplate.kind).as("kind").isEqualTo(kind);

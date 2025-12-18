@@ -1,10 +1,4 @@
-
 package io.gdcc.spi.export.dcat3.mapping;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,27 +9,31 @@ import com.jayway.jsonpath.ReadContext;
 import com.jayway.jsonpath.TypeRef;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
- * JaywayJsonFinder: supports
- *  - list(): values from current scope
- *  - nodes(): subtree matches from current scope
- *  - at(): create a finder scoped to a subtree while preserving original root
- *  - listRoot(): values from original document root
+ * JaywayJsonFinder: supports - list(): values from current scope - nodes(): subtree matches from
+ * current scope - at(): create a finder scoped to a subtree while preserving original root -
+ * listRoot(): values from original document root
  */
 public class JaywayJsonFinder {
-    private static final Logger logger = Logger.getLogger(JaywayJsonFinder.class.getCanonicalName());
+    private static final Logger logger =
+            Logger.getLogger(JaywayJsonFinder.class.getCanonicalName());
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private final ReadContext ctx;             // current scope
+    private final ReadContext ctx; // current scope
     private final ReadContext originalRootCtx; // original document root
 
     private static ReadContext createCtx(JsonNode root) {
-        Configuration config = Configuration.builder()
-                                            .jsonProvider(new JacksonJsonProvider())
-                                            .mappingProvider(new JacksonMappingProvider())
-                                            .options(Option.ALWAYS_RETURN_LIST, Option.SUPPRESS_EXCEPTIONS)
-                                            .build();
+        Configuration config =
+                Configuration.builder()
+                        .jsonProvider(new JacksonJsonProvider())
+                        .mappingProvider(new JacksonMappingProvider())
+                        .options(Option.ALWAYS_RETURN_LIST, Option.SUPPRESS_EXCEPTIONS)
+                        .build();
         return JsonPath.using(config).parse(root.toString());
     }
 
