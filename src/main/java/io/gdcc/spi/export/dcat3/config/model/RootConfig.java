@@ -1,19 +1,15 @@
 package io.gdcc.spi.export.dcat3.config.model;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RootConfig {
-    public boolean trace = false;
-
-    public Map<String, String> prefixes = new LinkedHashMap<>();
-
-    public List<Element> elements = new ArrayList<>();
-    public List<Relation> relations = new ArrayList<>();
-
-    /** Directory of the root file; used to resolve element files relative to it */
-    public Path baseDir;
-}
+/**
+ * @param baseDir Directory of the root file; used to resolve element files relative to it
+ */
+public record RootConfig(
+        boolean trace,
+        Map<String, String> prefixes,
+        List<Element> elements,
+        List<Relation> relations,
+        Path baseDir) {}

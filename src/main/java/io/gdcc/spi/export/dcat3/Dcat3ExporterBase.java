@@ -83,7 +83,7 @@ public abstract class Dcat3ExporterBase implements Exporter {
             ExportData exportData = ExportData.builder().provider(dataProvider).build();
             ObjectMapper mapper = new ObjectMapper();
 
-            if (root.trace) {
+            if (root.trace()) {
                 try {
                     String json =
                             mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
@@ -100,17 +100,17 @@ public abstract class Dcat3ExporterBase implements Exporter {
             // Build each element
             Map<String, Model> models = new LinkedHashMap<>();
             Map<String, List<Resource>> subjects = new LinkedHashMap<>();
-            Prefixes prefixes = new Prefixes(root.prefixes);
+            Prefixes prefixes = new Prefixes(root.prefixes());
 
-            for (Element element : root.elements) {
-                try (InputStream in = resolveElementFile(root.baseDir, element.file)) {
+            for (Element element : root.elements()) {
+                try (InputStream in = resolveElementFile(root.baseDir(), element.file())) {
                     ResourceConfig resourceConfig = new ResourceConfigLoader().load(in);
                     ResourceMapper resourceMapper =
-                            new ResourceMapper(resourceConfig, prefixes, element.typeCurieOrIri);
+                            new ResourceMapper(resourceConfig, prefixes, element.typeCurieOrIri());
                     Model elementModel = resourceMapper.build(jaywayJsonFinder);
 
                     // Collect all subjects by rdf:type
-                    String typeIri = prefixes.expand(element.typeCurieOrIri);
+                    String typeIri = prefixes.expand(element.typeCurieOrIri());
                     ResIterator it =
                             elementModel.listResourcesWithProperty(
                                     RDF.type, elementModel.createResource(typeIri));
@@ -119,9 +119,9 @@ public abstract class Dcat3ExporterBase implements Exporter {
                         subjectList.add(it.next());
                     }
 
-                    models.put(element.id, elementModel);
+                    models.put(element.id(), elementModel);
                     if (!subjectList.isEmpty()) {
-                        subjects.put(element.id, subjectList);
+                        subjects.put(element.id(), subjectList);
                     }
                 }
             }
@@ -132,9 +132,9 @@ public abstract class Dcat3ExporterBase implements Exporter {
             models.values().forEach(model::add);
 
             // Apply relations from root (n:m)
-            for (Relation relation : root.relations) {
-                List<Resource> subjList = subjects.get(relation.subjectElementId);
-                List<Resource> objList = subjects.get(relation.objectElementId);
+            for (Relation relation : root.relations()) {
+                List<Resource> subjList = subjects.get(relation.subjectElementId());
+                List<Resource> objList = subjects.get(relation.objectElementId());
                 if (subjList == null
                         || subjList.isEmpty()
                         || objList == null
@@ -142,7 +142,7 @@ public abstract class Dcat3ExporterBase implements Exporter {
                     continue; // nothing to link; could log based on cardinality in relation
                 }
                 Property property =
-                        model.createProperty(prefixes.expand(relation.predicateCurieOrIri));
+                        model.createProperty(prefixes.expand(relation.predicateCurieOrIri()));
                 for (Resource s : subjList) {
                     for (Resource o : objList) {
                         model.add(s, property, o);

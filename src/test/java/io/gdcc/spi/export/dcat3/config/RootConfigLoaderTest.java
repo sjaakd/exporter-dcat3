@@ -57,32 +57,33 @@ public class RootConfigLoaderTest {
         RootConfig rootConfig = RootConfigLoader.load();
 
         // Assert: root-level settings
-        assertThat(rootConfig.trace).isTrue();
-        assertThat(rootConfig.prefixes)
+        assertThat(rootConfig.trace()).isTrue();
+        assertThat(rootConfig.prefixes())
                 .containsEntry("dcat", "http://www.w3.org/ns/dcat#")
                 .containsEntry("dct", "http://purl.org/dc/terms/");
-        assertThat(rootConfig.elements).hasSize(1);
-        assertThat(rootConfig.elements.get(0).id).isEqualTo("catalog");
-        assertThat(rootConfig.elements.get(0).typeCurieOrIri).isEqualTo("dcat:Catalog");
-        assertThat(rootConfig.elements.get(0).file).isEqualTo("dcat-catalog.properties");
-        assertThat(rootConfig.baseDir).isEqualTo(temp);
+        assertThat(rootConfig.elements()).hasSize(1);
+        assertThat(rootConfig.elements().get(0).id()).isEqualTo("catalog");
+        assertThat(rootConfig.elements().get(0).typeCurieOrIri()).isEqualTo("dcat:Catalog");
+        assertThat(rootConfig.elements().get(0).file()).isEqualTo("dcat-catalog.properties");
+        assertThat(rootConfig.baseDir()).isEqualTo(temp);
 
         // Act: resolve the element file via the loader
         try (InputStream in =
-                resolveElementFile(rootConfig.baseDir, rootConfig.elements.get(0).file)) {
+                resolveElementFile(rootConfig.baseDir(), rootConfig.elements().get(0).file())) {
             assertThat(in).as("Element file should be resolvable from root baseDir").isNotNull();
 
             // Parse with PropertiesMappingLoader to ensure the file is valid
             ResourceConfig cfg = new ResourceConfigLoader().load(in);
 
             // Assert: a couple of fields to prove it parsed correctly
-            assertThat(cfg.subject.iriConst).isEqualTo("https://data.example.org/catalog/gdn-test");
-            ValueSource titleEn = cfg.props.get("title_en");
+            assertThat(cfg.subject().iriConst())
+                    .isEqualTo("https://data.example.org/catalog/gdn-test");
+            ValueSource titleEn = cfg.props().get("title_en");
             assertThat(titleEn).isNotNull();
-            assertThat(titleEn.predicate).isEqualTo("dct:title");
-            assertThat(titleEn.as).isEqualTo("literal");
-            assertThat(titleEn.lang).isEqualTo("en");
-            assertThat(titleEn.constValue).isEqualTo("Test Catalog");
+            assertThat(titleEn.predicate()).isEqualTo("dct:title");
+            assertThat(titleEn.as()).isEqualTo("literal");
+            assertThat(titleEn.lang()).isEqualTo("en");
+            assertThat(titleEn.constValue()).isEqualTo("Test Catalog");
         }
     }
 
@@ -122,7 +123,7 @@ public class RootConfigLoaderTest {
         System.setProperty(
                 RootConfigLoader.SYS_PROP, rootFile.toString()); // absolute path → already covered
         RootConfig rc = RootConfigLoader.load();
-        assertThat(rc.elements).hasSize(1);
+        assertThat(rc.elements()).hasSize(1);
     }
 
     @Test
@@ -153,15 +154,15 @@ public class RootConfigLoaderTest {
         RootConfig rootConfig = RootConfigLoader.load();
 
         // Assert
-        assertThat(rootConfig.baseDir).isEqualTo(homeDir);
-        assertThat(rootConfig.elements).hasSize(1);
+        assertThat(rootConfig.baseDir()).isEqualTo(homeDir);
+        assertThat(rootConfig.elements()).hasSize(1);
 
         // Resolve element from user.home
         try (InputStream in =
-                resolveElementFile(rootConfig.baseDir, "dcat-catalog-home.properties")) {
+                resolveElementFile(rootConfig.baseDir(), "dcat-catalog-home.properties")) {
             assertThat(in).isNotNull();
             ResourceConfig resourceConfig = new ResourceConfigLoader().load(in);
-            assertThat(resourceConfig.subject.iriConst)
+            assertThat(resourceConfig.subject().iriConst())
                     .isEqualTo("https://example.org/catalog/user-home");
         } finally {
             // Clean up files we wrote under user.home

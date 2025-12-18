@@ -36,8 +36,8 @@ public class ResourceMapper {
         model.setNsPrefixes(prefixes.jena());
 
         List<JsonNode> scopes;
-        if (resourceConfig.scopeJson != null && !resourceConfig.scopeJson.isBlank()) {
-            scopes = finder.nodes(resourceConfig.scopeJson);
+        if (resourceConfig.scopeJson() != null && !resourceConfig.scopeJson().isBlank()) {
+            scopes = finder.nodes(resourceConfig.scopeJson());
             if (scopes.isEmpty()) {
                 return model;
             }
@@ -52,28 +52,29 @@ public class ResourceMapper {
                 subject.addProperty(
                         RDF.type, model.createResource(prefixes.expand(resourceTypeCurieOrIri)));
             }
-            resourceConfig.props.forEach(
-                    (id, valueSource) -> addProperty(model, subject, scoped, valueSource));
+            resourceConfig
+                    .props()
+                    .forEach((id, valueSource) -> addProperty(model, subject, scoped, valueSource));
         }
         return model;
     }
 
     private Resource createSubject(Model model, JaywayJsonFinder finder) {
-        String iri = resourceConfig.subject.iriConst;
-        if (iri == null && resourceConfig.subject.iriTemplate != null) {
-            iri = resourceConfig.subject.iriTemplate;
+        String iri = resourceConfig.subject().iriConst();
+        if (iri == null && resourceConfig.subject().iriTemplate() != null) {
+            iri = resourceConfig.subject().iriTemplate();
         }
         if (iri == null
-                && resourceConfig.subject.iriFormat != null
-                && resourceConfig.subject.iriJson != null) {
-            List<String> values = listScopedOrRoot(finder, resourceConfig.subject.iriJson);
+                && resourceConfig.subject().iriFormat() != null
+                && resourceConfig.subject().iriJson() != null) {
+            List<String> values = listScopedOrRoot(finder, resourceConfig.subject().iriJson());
             String value = values.isEmpty() ? null : values.get(0);
             if (value != null) {
-                iri = resourceConfig.subject.iriFormat.replace("${value}", value);
+                iri = resourceConfig.subject().iriFormat().replace("${value}", value);
             }
         }
-        if (iri == null && resourceConfig.subject.iriJson != null) {
-            List<String> values = listScopedOrRoot(finder, resourceConfig.subject.iriJson);
+        if (iri == null && resourceConfig.subject().iriJson() != null) {
+            List<String> values = listScopedOrRoot(finder, resourceConfig.subject().iriJson());
             iri = values.isEmpty() ? null : values.get(0);
         }
         return (iri == null || iri.isBlank()) ? model.createResource() : model.createResource(iri);
@@ -81,7 +82,7 @@ public class ResourceMapper {
 
     private void addProperty(
             Model model, Resource subject, JaywayJsonFinder finder, ValueSource valueSource) {
-        String predicateIri = prefixes.expand(valueSource.predicate);
+        String predicateIri = prefixes.expand(valueSource.predicate());
         if (predicateIri == null) {
             return;
         }
@@ -93,7 +94,7 @@ public class ResourceMapper {
 
     private List<RDFNode> resolveObjects(
             Model model, JaywayJsonFinder finder, ValueSource valueSource) {
-        return switch (valueSource.as) {
+        return switch (valueSource.as()) {
             case "node-ref" -> Collections.singletonList(buildNodeRef(model, finder, valueSource));
             case "iri" -> valuesFromSource(finder, valueSource).stream()
                     .map(applyMapIfAny(valueSource))
@@ -105,42 +106,45 @@ public class ResourceMapper {
                     .map(applyMapIfAny(valueSource))
                     .map(applyFormatIfAny(valueSource, finder)) // apply format & placeholders
                     .filter(Objects::nonNull)
-                    .map(val -> literal(model, val, valueSource.lang, valueSource.datatype))
+                    .map(val -> literal(model, val, valueSource.lang(), valueSource.datatype()))
                     .collect(Collectors.toList());
         };
     }
 
     private RDFNode buildNodeRef(Model model, JaywayJsonFinder finder, ValueSource valueSource) {
-        NodeTemplate nodeTemplate = resourceConfig.nodes.get(valueSource.nodeRef);
+        NodeTemplate nodeTemplate = resourceConfig.nodes().get(valueSource.nodeRef());
         if (nodeTemplate == null) {
             return model.createResource(); // bnode
         }
         Resource resource =
-                "iri".equals(nodeTemplate.kind) && nodeTemplate.iriConst != null
-                        ? model.createResource(nodeTemplate.iriConst)
+                "iri".equals(nodeTemplate.kind()) && nodeTemplate.iriConst() != null
+                        ? model.createResource(nodeTemplate.iriConst())
                         : model.createResource();
-        if (nodeTemplate.type != null) {
+        if (nodeTemplate.type() != null) {
             resource.addProperty(
-                    RDF.type, model.createResource(prefixes.expand(nodeTemplate.type)));
+                    RDF.type, model.createResource(prefixes.expand(nodeTemplate.type())));
         }
-        nodeTemplate.props.forEach(
-                (propertyId, propertyValueSource) -> {
-                    Property property =
-                            model.createProperty(prefixes.expand(propertyValueSource.predicate));
-                    for (RDFNode obj : resolveObjects(model, finder, propertyValueSource)) {
-                        resource.addProperty(property, obj);
-                    }
-                });
+        nodeTemplate
+                .props()
+                .forEach(
+                        (propertyId, propertyValueSource) -> {
+                            Property property =
+                                    model.createProperty(
+                                            prefixes.expand(propertyValueSource.predicate()));
+                            for (RDFNode obj : resolveObjects(model, finder, propertyValueSource)) {
+                                resource.addProperty(property, obj);
+                            }
+                        });
         return resource;
     }
 
     private List<String> valuesFromSource(JaywayJsonFinder finder, ValueSource valueSource) {
-        if (valueSource.constValue != null) {
-            return Collections.singletonList(valueSource.constValue);
+        if (valueSource.constValue() != null) {
+            return Collections.singletonList(valueSource.constValue());
         }
-        if (valueSource.json != null) {
-            List<String> values = listScopedOrRoot(finder, valueSource.json);
-            if (valueSource.multi) {
+        if (valueSource.json() != null) {
+            List<String> values = listScopedOrRoot(finder, valueSource.json());
+            if (valueSource.multi()) {
                 return values;
             }
             return values.isEmpty()
@@ -149,7 +153,7 @@ public class ResourceMapper {
         }
         // If format contains inline JSONPaths or indexed placeholders, ensure we have a single base
         // value
-        if (valueSource.format != null && !valueSource.format.isBlank()) {
+        if (valueSource.format() != null && !valueSource.format().isBlank()) {
             return Collections.singletonList("");
         }
         return Collections.emptyList();
@@ -168,8 +172,8 @@ public class ResourceMapper {
             if (s == null) {
                 return null;
             }
-            if (!valueSource.map.isEmpty()) {
-                return valueSource.map.getOrDefault(s, null);
+            if (!valueSource.map().isEmpty()) {
+                return valueSource.map().getOrDefault(s, null);
             }
             return s;
         };
@@ -178,26 +182,26 @@ public class ResourceMapper {
     private Function<String, String> applyFormatIfAny(
             ValueSource valueSource, JaywayJsonFinder finder) {
         return s -> {
-            if (valueSource.format == null || valueSource.format.isBlank()) {
+            if (valueSource.format() == null || valueSource.format().isBlank()) {
                 return s; // no formatting requested
             }
             // Start from format template
-            String formatted = valueSource.format;
+            String formatted = valueSource.format();
 
             // Legacy ${value}: use current s if provided, else resolve vs.json
             if (formatted.contains("${value}")) {
                 String base = s;
-                if ((base == null || base.isEmpty()) && valueSource.json != null) {
-                    List<String> values = listScopedOrRoot(finder, valueSource.json);
+                if ((base == null || base.isEmpty()) && valueSource.json() != null) {
+                    List<String> values = listScopedOrRoot(finder, valueSource.json());
                     base = values.isEmpty() ? "" : values.get(0);
                 }
                 formatted = formatted.replace("${value}", base == null ? "" : base);
             }
 
             // Indexed ${1}, ${2}, ... from vs.jsonPaths
-            if (valueSource.jsonPaths != null && !valueSource.jsonPaths.isEmpty()) {
-                for (int i = 0; i < valueSource.jsonPaths.size(); i++) {
-                    String path = valueSource.jsonPaths.get(i);
+            if (valueSource.jsonPaths() != null && !valueSource.jsonPaths().isEmpty()) {
+                for (int i = 0; i < valueSource.jsonPaths().size(); i++) {
+                    String path = valueSource.jsonPaths().get(i);
                     List<String> values = listScopedOrRoot(finder, path);
                     String value = values.isEmpty() ? "" : values.get(0);
                     formatted = formatted.replace("${" + (i + 1) + "}", value);

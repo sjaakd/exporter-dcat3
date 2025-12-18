@@ -25,17 +25,17 @@ public class PropertiesMappingLoaderTest {
     void loads_subject() throws Exception {
         ResourceConfig resourceConfig = load("input/config_2/dcat-catalog.properties");
 
-        assertThat(resourceConfig.subject.iriConst)
+        assertThat(resourceConfig.subject().iriConst())
                 .isEqualTo("https://data.example.org/catalog/gdn-test");
-        assertThat(resourceConfig.subject.iriJson).isNull();
-        assertThat(resourceConfig.subject.iriTemplate).isNull();
+        assertThat(resourceConfig.subject().iriJson()).isNull();
+        assertThat(resourceConfig.subject().iriTemplate()).isNull();
     }
 
     @Test
     void loads_literal_properties_with_lang_and_json_or_const() throws Exception {
         ResourceConfig resourceConfig = load("input/config_2/dcat-catalog.properties");
 
-        ValueSource titleEn = resourceConfig.props.get("title_en");
+        ValueSource titleEn = resourceConfig.props().get("title_en");
         assertValueSource(
                 titleEn,
                 "literal",
@@ -47,7 +47,7 @@ public class PropertiesMappingLoaderTest {
                 null,
                 false);
 
-        ValueSource descrEn = resourceConfig.props.get("description_en");
+        ValueSource descrEn = resourceConfig.props().get("description_en");
         assertValueSource(
                 descrEn,
                 "literal",
@@ -65,17 +65,17 @@ public class PropertiesMappingLoaderTest {
         ResourceConfig resourceConfig = load("input/config_2/dcat-catalog.properties");
 
         // contact node-ref property
-        ValueSource cp = resourceConfig.props.get("contactPoint");
+        ValueSource cp = resourceConfig.props().get("contactPoint");
         assertValueSource(
                 cp, "node-ref", "dcat:contactPoint", null, null, null, null, "contact", false);
 
         // contact node template
-        NodeTemplate contact = resourceConfig.nodes.get("contact");
+        NodeTemplate contact = resourceConfig.nodes().get("contact");
         assertNodeTemplate(contact, "contact", "bnode", null, "vcard:Kind");
-        assertThat(contact.props).hasSize(3);
+        assertThat(contact.props()).hasSize(3);
 
         assertValueSource(
-                contact.props.get("fn_en"),
+                contact.props().get("fn_en"),
                 "literal",
                 "vcard:fn",
                 "en",
@@ -85,7 +85,7 @@ public class PropertiesMappingLoaderTest {
                 null,
                 false);
         assertValueSource(
-                contact.props.get("email"),
+                contact.props().get("email"),
                 "iri",
                 "vcard:hasEmail",
                 null,
@@ -95,7 +95,7 @@ public class PropertiesMappingLoaderTest {
                 null,
                 false);
         assertValueSource(
-                contact.props.get("url"),
+                contact.props().get("url"),
                 "iri",
                 "vcard:hasURL",
                 null,
@@ -106,16 +106,16 @@ public class PropertiesMappingLoaderTest {
                 false);
 
         // publisher node-ref property
-        ValueSource pub = resourceConfig.props.get("publisher");
+        ValueSource pub = resourceConfig.props().get("publisher");
         assertValueSource(
                 pub, "node-ref", "dct:publisher", null, null, null, null, "publisher", false);
 
         // publisher node template
-        NodeTemplate publisher = resourceConfig.nodes.get("publisher");
+        NodeTemplate publisher = resourceConfig.nodes().get("publisher");
         assertNodeTemplate(publisher, "publisher", "bnode", null, "foaf:Agent");
-        assertThat(publisher.props).hasSize(3);
+        assertThat(publisher.props()).hasSize(3);
         assertValueSource(
-                publisher.props.get("type"),
+                publisher.props().get("type"),
                 "iri",
                 "dct:type",
                 null,
@@ -125,7 +125,7 @@ public class PropertiesMappingLoaderTest {
                 null,
                 false);
         assertValueSource(
-                publisher.props.get("name_nl"),
+                publisher.props().get("name_nl"),
                 "literal",
                 "foaf:name",
                 "nl",
@@ -135,7 +135,7 @@ public class PropertiesMappingLoaderTest {
                 null,
                 false);
         assertValueSource(
-                publisher.props.get("name_en"),
+                publisher.props().get("name_en"),
                 "literal",
                 "foaf:name",
                 "en",
@@ -158,11 +158,11 @@ public class PropertiesMappingLoaderTest {
                 new ResourceConfigLoader().load(new java.io.ByteArrayInputStream(props.getBytes()));
 
         // loader should have created ValueSource and set the known field only
-        assertThat(resourceConfig.props).containsKey("foo");
-        ValueSource vs = resourceConfig.props.get("foo");
-        assertThat(vs.predicate).isEqualTo("dct:title");
+        assertThat(resourceConfig.props()).containsKey("foo");
+        ValueSource vs = resourceConfig.props().get("foo");
+        assertThat(vs.predicate()).isEqualTo("dct:title");
         // unknown 'bar' should be ignored silently
-        assertThat(vs.lang).isNull();
+        assertThat(vs.lang()).isNull();
     }
 
     @Test
@@ -178,8 +178,8 @@ public class PropertiesMappingLoaderTest {
         ResourceConfig cfg =
                 new ResourceConfigLoader().load(new java.io.ByteArrayInputStream(props.getBytes()));
 
-        ValueSource lang = cfg.props.get("language");
-        assertThat(lang.map)
+        ValueSource lang = cfg.props().get("language");
+        assertThat(lang.map())
                 .containsEntry(
                         "nl", "http://publications.europa.eu/resource/authority/language/NLD")
                 .containsEntry(
