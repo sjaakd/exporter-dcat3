@@ -1,0 +1,137 @@
+{
+  "dcterms:modified" : "2025-12-18",
+  "dcterms:creator" : "Root",
+  "@type" : "ore:ResourceMap",
+  "schema:additionalType" : "Dataverse OREMap Format v1.0.1",
+  "dvcore:generatedBy" : {
+    "@type" : "schema:SoftwareApplication",
+    "schema:name" : "Dataverse",
+    "schema:version" : "6.6",
+    "schema:url" : "https://github.com/iqss/dataverse"
+  },
+  "@id" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/datasets/export?exporter=OAI_ORE&persistentId=https://doi.org/10.83300/GDN/4MEPY2",
+  "ore:describes" : {
+    "citation:dsDescription" : {
+      "citation:dsDescriptionValue" : "sdasdsa"
+    },
+    "citation:datasetContact" : {
+      "citation:datasetContactName" : "Admin, Dataverse",
+      "citation:datasetContactAffiliation" : "Dataverse.org",
+      "citation:datasetContactEmail" : "dataverse@mailinator.com"
+    },
+    "author" : {
+      "citation:authorName" : "Admin, Dataverse",
+      "citation:authorAffiliation" : "Dataverse.org"
+    },
+    "GDNDatasetMetadata:GDNhvdCompliant" : {
+      "GDNDatasetMetadata:GDNhvdApplicableLegislation" : "eu_2023_138",
+      "GDNDatasetMetadata:GDNhvdCategory" : [ "energy_resources", "env_monitoring", "area_management" ]
+    },
+    "GDNDatasetMetadata:GDNtheme" : "tech",
+    "citation:depositor" : "Admin, Dataverse",
+    "title" : "test",
+    "GDNDatasetMetadata:GDNpublisher" : "geo_survey_nl",
+    "dateOfDeposit" : "2025-12-17",
+    "GDNDatasetMetadata:GDNaccessRights" : "restricted",
+    "GDNDatasetMetadata:GDNdomain" : "geothermal_energy",
+    "GDNDatasetMetadata:GDNidentifier" : "Test",
+    "subject" : "Earth and Environmental Sciences",
+    "@id" : "https://doi.org/10.83300/GDN/4MEPY2",
+    "@type" : [ "ore:Aggregation", "schema:Dataset" ],
+    "schema:version" : "4.0",
+    "schema:name" : "test",
+    "schema:dateModified" : "2025-12-18 14:56:06.989",
+    "schema:datePublished" : "2025-12-17",
+    "schema:creativeWorkStatus" : "RELEASED",
+    "schema:license" : "http://creativecommons.org/publicdomain/zero/1.0",
+    "dvcore:fileTermsOfAccess" : {
+      "dvcore:fileRequestAccess" : true
+    },
+    "schema:includedInDataCatalog" : "Root",
+    "schema:isPartOf" : {
+      "schema:name" : "Root",
+      "@id" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/dataverse/root",
+      "schema:description" : "The root dataverse."
+    },
+    "ore:aggregates" : [ {
+      "schema:name" : "CPU Utilization (1).xlsx",
+      "dvcore:restricted" : false,
+      "schema:version" : 1,
+      "dvcore:datasetVersionId" : 4,
+      "@id" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=3",
+      "schema:sameAs" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/3?format=original",
+      "@type" : "ore:AggregatedResource",
+      "schema:fileFormat" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "dvcore:filesize" : 15441,
+      "dvcore:storageIdentifier" : "local://19b2c115b77-f861d0d485f2",
+      "dvcore:currentIngestedName" : "CPU Utilization (1).tab",
+      "dvcore:UNF" : "UNF:6:0WEcnD0cAy+0OAxMv05cKg==",
+      "dvcore:rootDataFileId" : -1,
+      "dvcore:checksum" : {
+        "@type" : "MD5",
+        "@value" : "f40d06503f00c8df28bc3d9cd7f28f8e"
+      }
+    }, {
+      "schema:name" : "dcat-root.properties",
+      "dvcore:restricted" : false,
+      "schema:version" : 1,
+      "dvcore:datasetVersionId" : 4,
+      "@id" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=4",
+      "schema:sameAs" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/4",
+      "@type" : "ore:AggregatedResource",
+      "schema:fileFormat" : "application/octet-stream",
+      "dvcore:filesize" : 3168,
+      "dvcore:storageIdentifier" : "local://19b31b0f547-18671ce3ac27",
+      "dvcore:rootDataFileId" : -1,
+      "dvcore:checksum" : {
+        "@type" : "MD5",
+        "@value" : "c06407eca8f8bb295b6c9174ad936acc"
+      }
+    }, {
+      "schema:name" : "export.rdf",
+      "dvcore:restricted" : false,
+      "schema:version" : 1,
+      "dvcore:datasetVersionId" : 4,
+      "@id" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=6",
+      "schema:sameAs" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/6",
+      "@type" : "ore:AggregatedResource",
+      "schema:fileFormat" : "application/rdf+xml",
+      "dvcore:filesize" : 3918,
+      "dvcore:storageIdentifier" : "local://19b31f5e7e9-ad8790009d0e",
+      "dvcore:rootDataFileId" : -1,
+      "dvcore:checksum" : {
+        "@type" : "MD5",
+        "@value" : "e2b46812ace1c85600ca43e085bbdb26"
+      }
+    }, {
+      "schema:name" : "Invictus-inschrijfformulier-junioren-230323.pdf",
+      "dvcore:restricted" : false,
+      "schema:version" : 1,
+      "dvcore:datasetVersionId" : 4,
+      "@id" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=5",
+      "schema:sameAs" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/5",
+      "@type" : "ore:AggregatedResource",
+      "schema:fileFormat" : "application/pdf",
+      "dvcore:filesize" : 190223,
+      "dvcore:storageIdentifier" : "local://19b31b15635-ca843e231b04",
+      "dvcore:rootDataFileId" : -1,
+      "dvcore:checksum" : {
+        "@type" : "MD5",
+        "@value" : "222a22c84686ccbd541a29c19784001b"
+      }
+    } ],
+    "schema:hasPart" : [ "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=3", "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=4", "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=6", "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=5" ]
+  },
+  "@context" : {
+    "GDNDatasetMetadata" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/schema/GDNDatasetMetadata#",
+    "author" : "http://purl.org/dc/terms/creator",
+    "citation" : "https://dataverse.org/schema/citation/",
+    "dateOfDeposit" : "http://purl.org/dc/terms/dateSubmitted",
+    "dcterms" : "http://purl.org/dc/terms/",
+    "dvcore" : "https://dataverse.org/schema/core#",
+    "ore" : "http://www.openarchives.org/ore/terms/",
+    "schema" : "http://schema.org/",
+    "subject" : "http://purl.org/dc/terms/subject",
+    "title" : "http://purl.org/dc/terms/title"
+  }
+}

@@ -5,12 +5,24 @@ import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.List;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFParser;
+import org.apache.jena.shacl.ValidationReport;
 
 public class TestUtil {
 
@@ -66,5 +78,77 @@ public class TestUtil {
                 }
             }
         };
+    }
+
+    public static Model readModel(byte[] rdf, Lang lang) {
+        Model model = ModelFactory.createDefaultModel();
+        RDFParser.create().source(new ByteArrayInputStream(rdf)).lang(lang).parse(model.getGraph());
+        return model;
+    }
+
+    /** Fetch and combine multiple SHACL shape files (Turtle). */
+    public static Model fetchShapesModel(List<String> urls) throws Exception {
+        Model shapes = ModelFactory.createDefaultModel();
+        HttpClient client =
+                HttpClient.newBuilder()
+                        .followRedirects(HttpClient.Redirect.NORMAL)
+                        .connectTimeout(Duration.ofSeconds(10))
+                        .build();
+
+        for (String u : urls) {
+            HttpRequest req =
+                    HttpRequest.newBuilder(URI.create(u))
+                            .timeout(Duration.ofSeconds(20))
+                            .header("Accept", "text/turtle,application/x-turtle;q=0.9,*/*;q=0.1")
+                            .GET()
+                            .build();
+            HttpResponse<byte[]> resp = client.send(req, HttpResponse.BodyHandlers.ofByteArray());
+            if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+                try (var in = new ByteArrayInputStream(resp.body())) {
+                    shapes.read(in, null, "TURTLE");
+                }
+            } else {
+                throw new IllegalStateException(
+                        "Failed to fetch SHACL from " + u + " (HTTP " + resp.statusCode() + ")");
+            }
+        }
+        return shapes;
+    }
+
+    /** Quick connectivity probe to avoid flaky CI. */
+    public static boolean looksOnline() {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest req =
+                    HttpRequest.newBuilder(
+                                    URI.create("https://semiceu.github.io/DCAT-AP/releases/3.0.0/"))
+                            .timeout(Duration.ofSeconds(5))
+                            .GET()
+                            .build();
+            HttpResponse<Void> resp = client.send(req, HttpResponse.BodyHandlers.discarding());
+            return resp.statusCode() >= 200 && resp.statusCode() < 500;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static String toValidationReport(ValidationReport report) {
+        var sb = new StringBuilder("DCAT/DCAT-AP-NL 3.0 SHACL validation report\n");
+        report.getEntries()
+                .forEach(
+                        entry ->
+                                sb.append(" - focusNode: ")
+                                        .append(entry.focusNode())
+                                        .append('\n')
+                                        .append("   path: ")
+                                        .append(entry.resultPath())
+                                        .append('\n')
+                                        .append("   message: ")
+                                        .append(entry.message())
+                                        .append('\n')
+                                        .append("   severity: ")
+                                        .append(entry.severity())
+                                        .append('\n'));
+        return sb.toString();
     }
 }

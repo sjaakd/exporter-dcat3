@@ -30,7 +30,7 @@ class ExportDataTest {
 
         // -- prepare
         ExportDataProvider exportDataProvider =
-                getExportDataProvider("src/test/resources/input/export_data_source_2");
+                getExportDataProvider("src/test/resources/input/export_data_source_AP_NL30");
         ExportData result = ExportData.builder().provider(exportDataProvider).build();
 
         // -- verify

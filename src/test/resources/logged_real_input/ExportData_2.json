@@ -1,0 +1,697 @@
+{
+  "datasetJson" : {
+    "id" : 2,
+    "identifier" : "GDN/4MEPY2",
+    "persistentUrl" : "https://doi.org/10.83300/GDN/4MEPY2",
+    "protocol" : "doi",
+    "authority" : "10.83300",
+    "separator" : "/",
+    "publisher" : "Root",
+    "publicationDate" : "2025-12-17",
+    "storageIdentifier" : "local://10.83300/GDN/4MEPY2",
+    "datasetType" : "dataset",
+    "datasetVersion" : {
+      "id" : 4,
+      "datasetId" : 2,
+      "datasetPersistentId" : "doi:10.83300/GDN/4MEPY2",
+      "storageIdentifier" : "local://10.83300/GDN/4MEPY2",
+      "versionNumber" : 4,
+      "versionMinorNumber" : 0,
+      "versionState" : "RELEASED",
+      "latestVersionPublishingState" : "RELEASED",
+      "UNF" : "UNF:6:0WEcnD0cAy+0OAxMv05cKg==",
+      "lastUpdateTime" : "2025-12-18T14:56:06Z",
+      "releaseTime" : "2025-12-18T14:56:06Z",
+      "createTime" : "2025-12-18T14:55:59Z",
+      "publicationDate" : "2025-12-17",
+      "citationDate" : "2025-12-17",
+      "license" : {
+        "name" : "CC0 1.0",
+        "uri" : "http://creativecommons.org/publicdomain/zero/1.0",
+        "iconUri" : "https://licensebuttons.net/p/zero/1.0/88x31.png",
+        "rightsIdentifier" : "CC0-1.0",
+        "rightsIdentifierScheme" : "SPDX",
+        "schemeUri" : "https://spdx.org/licenses/",
+        "languageCode" : "en"
+      },
+      "fileAccessRequest" : true,
+      "metadataBlocks" : {
+        "citation" : {
+          "displayName" : "Citation Metadata",
+          "name" : "citation",
+          "fields" : [ {
+            "typeName" : "title",
+            "multiple" : false,
+            "typeClass" : "primitive",
+            "value" : "test"
+          }, {
+            "typeName" : "author",
+            "multiple" : true,
+            "typeClass" : "compound",
+            "value" : [ {
+              "authorName" : {
+                "typeName" : "authorName",
+                "multiple" : false,
+                "typeClass" : "primitive",
+                "value" : "Admin, Dataverse"
+              },
+              "authorAffiliation" : {
+                "typeName" : "authorAffiliation",
+                "multiple" : false,
+                "typeClass" : "primitive",
+                "value" : "Dataverse.org"
+              }
+            } ]
+          }, {
+            "typeName" : "datasetContact",
+            "multiple" : true,
+            "typeClass" : "compound",
+            "value" : [ {
+              "datasetContactName" : {
+                "typeName" : "datasetContactName",
+                "multiple" : false,
+                "typeClass" : "primitive",
+                "value" : "Admin, Dataverse"
+              },
+              "datasetContactAffiliation" : {
+                "typeName" : "datasetContactAffiliation",
+                "multiple" : false,
+                "typeClass" : "primitive",
+                "value" : "Dataverse.org"
+              },
+              "datasetContactEmail" : {
+                "typeName" : "datasetContactEmail",
+                "multiple" : false,
+                "typeClass" : "primitive",
+                "value" : "dataverse@mailinator.com"
+              }
+            } ]
+          }, {
+            "typeName" : "dsDescription",
+            "multiple" : true,
+            "typeClass" : "compound",
+            "value" : [ {
+              "dsDescriptionValue" : {
+                "typeName" : "dsDescriptionValue",
+                "multiple" : false,
+                "typeClass" : "primitive",
+                "value" : "sdasdsa"
+              }
+            } ]
+          }, {
+            "typeName" : "subject",
+            "multiple" : true,
+            "typeClass" : "controlledVocabulary",
+            "value" : [ "Earth and Environmental Sciences" ]
+          }, {
+            "typeName" : "depositor",
+            "multiple" : false,
+            "typeClass" : "primitive",
+            "value" : "Admin, Dataverse"
+          }, {
+            "typeName" : "dateOfDeposit",
+            "multiple" : false,
+            "typeClass" : "primitive",
+            "value" : "2025-12-17"
+          } ]
+        },
+        "GDNDatasetMetadata" : {
+          "displayName" : "GDN dataset metadata",
+          "name" : "GDNDatasetMetadata",
+          "fields" : [ {
+            "typeName" : "GDNdomain",
+            "multiple" : false,
+            "typeClass" : "controlledVocabulary",
+            "value" : "geothermal_energy"
+          }, {
+            "typeName" : "GDNidentifier",
+            "multiple" : false,
+            "typeClass" : "primitive",
+            "value" : "Test"
+          }, {
+            "typeName" : "GDNpublisher",
+            "multiple" : false,
+            "typeClass" : "controlledVocabulary",
+            "value" : "geo_survey_nl"
+          }, {
+            "typeName" : "GDNaccessRights",
+            "multiple" : false,
+            "typeClass" : "controlledVocabulary",
+            "value" : "restricted"
+          }, {
+            "typeName" : "GDNtheme",
+            "multiple" : true,
+            "typeClass" : "controlledVocabulary",
+            "value" : [ "tech" ]
+          }, {
+            "typeName" : "GDNhvdCompliant",
+            "multiple" : false,
+            "typeClass" : "compound",
+            "value" : {
+              "GDNhvdApplicableLegislation" : {
+                "typeName" : "GDNhvdApplicableLegislation",
+                "multiple" : false,
+                "typeClass" : "controlledVocabulary",
+                "value" : "eu_2023_138"
+              },
+              "GDNhvdCategory" : {
+                "typeName" : "GDNhvdCategory",
+                "multiple" : true,
+                "typeClass" : "controlledVocabulary",
+                "value" : [ "energy_resources", "env_monitoring", "area_management" ]
+              }
+            }
+          } ]
+        }
+      },
+      "files" : [ {
+        "label" : "CPU Utilization (1).tab",
+        "restricted" : false,
+        "version" : 1,
+        "datasetVersionId" : 4,
+        "dataFile" : {
+          "id" : 3,
+          "persistentId" : "",
+          "filename" : "CPU Utilization (1).tab",
+          "contentType" : "text/tab-separated-values",
+          "friendlyType" : "Tab-Delimited",
+          "filesize" : 9503,
+          "storageIdentifier" : "local://19b2c115b77-f861d0d485f2",
+          "originalFileFormat" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "originalFormatLabel" : "MS Excel Spreadsheet",
+          "originalFileSize" : 15441,
+          "originalFileName" : "CPU Utilization (1).xlsx",
+          "UNF" : "UNF:6:0WEcnD0cAy+0OAxMv05cKg==",
+          "rootDataFileId" : -1,
+          "md5" : "f40d06503f00c8df28bc3d9cd7f28f8e",
+          "checksum" : {
+            "type" : "MD5",
+            "value" : "f40d06503f00c8df28bc3d9cd7f28f8e"
+          },
+          "tabularData" : true,
+          "creationDate" : "2025-12-17",
+          "publicationDate" : "2025-12-17",
+          "fileAccessRequest" : true
+        }
+      }, {
+        "label" : "dcat-root.properties",
+        "restricted" : false,
+        "version" : 1,
+        "datasetVersionId" : 4,
+        "dataFile" : {
+          "id" : 4,
+          "persistentId" : "",
+          "filename" : "dcat-root.properties",
+          "contentType" : "application/octet-stream",
+          "friendlyType" : "Unknown",
+          "filesize" : 3168,
+          "storageIdentifier" : "local://19b31b0f547-18671ce3ac27",
+          "rootDataFileId" : -1,
+          "md5" : "c06407eca8f8bb295b6c9174ad936acc",
+          "checksum" : {
+            "type" : "MD5",
+            "value" : "c06407eca8f8bb295b6c9174ad936acc"
+          },
+          "tabularData" : false,
+          "creationDate" : "2025-12-18",
+          "publicationDate" : "2025-12-18",
+          "fileAccessRequest" : true
+        }
+      }, {
+        "label" : "export.rdf",
+        "restricted" : false,
+        "version" : 1,
+        "datasetVersionId" : 4,
+        "dataFile" : {
+          "id" : 6,
+          "persistentId" : "",
+          "filename" : "export.rdf",
+          "contentType" : "application/rdf+xml",
+          "friendlyType" : "application/rdf+xml",
+          "filesize" : 3918,
+          "storageIdentifier" : "local://19b31f5e7e9-ad8790009d0e",
+          "rootDataFileId" : -1,
+          "md5" : "e2b46812ace1c85600ca43e085bbdb26",
+          "checksum" : {
+            "type" : "MD5",
+            "value" : "e2b46812ace1c85600ca43e085bbdb26"
+          },
+          "tabularData" : false,
+          "creationDate" : "2025-12-18",
+          "publicationDate" : "2025-12-18",
+          "fileAccessRequest" : true
+        }
+      }, {
+        "label" : "Invictus-inschrijfformulier-junioren-230323.pdf",
+        "restricted" : false,
+        "version" : 1,
+        "datasetVersionId" : 4,
+        "dataFile" : {
+          "id" : 5,
+          "persistentId" : "",
+          "filename" : "Invictus-inschrijfformulier-junioren-230323.pdf",
+          "contentType" : "application/pdf",
+          "friendlyType" : "Adobe PDF",
+          "filesize" : 190223,
+          "storageIdentifier" : "local://19b31b15635-ca843e231b04",
+          "rootDataFileId" : -1,
+          "md5" : "222a22c84686ccbd541a29c19784001b",
+          "checksum" : {
+            "type" : "MD5",
+            "value" : "222a22c84686ccbd541a29c19784001b"
+          },
+          "tabularData" : false,
+          "creationDate" : "2025-12-18",
+          "publicationDate" : "2025-12-18",
+          "fileAccessRequest" : true
+        }
+      } ],
+      "citation" : "Admin, Dataverse, 2025, \"test\", https://doi.org/10.83300/GDN/4MEPY2, Root, V4, UNF:6:0WEcnD0cAy+0OAxMv05cKg== [fileUNF]"
+    }
+  },
+  "datasetORE" : {
+    "dcterms:modified" : "2025-12-18",
+    "dcterms:creator" : "Root",
+    "@type" : "ore:ResourceMap",
+    "schema:additionalType" : "Dataverse OREMap Format v1.0.1",
+    "dvcore:generatedBy" : {
+      "@type" : "schema:SoftwareApplication",
+      "schema:name" : "Dataverse",
+      "schema:version" : "6.6",
+      "schema:url" : "https://github.com/iqss/dataverse"
+    },
+    "@id" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/datasets/export?exporter=OAI_ORE&persistentId=https://doi.org/10.83300/GDN/4MEPY2",
+    "ore:describes" : {
+      "citation:dsDescription" : {
+        "citation:dsDescriptionValue" : "sdasdsa"
+      },
+      "citation:datasetContact" : {
+        "citation:datasetContactName" : "Admin, Dataverse",
+        "citation:datasetContactAffiliation" : "Dataverse.org",
+        "citation:datasetContactEmail" : "dataverse@mailinator.com"
+      },
+      "author" : {
+        "citation:authorName" : "Admin, Dataverse",
+        "citation:authorAffiliation" : "Dataverse.org"
+      },
+      "GDNDatasetMetadata:GDNhvdCompliant" : {
+        "GDNDatasetMetadata:GDNhvdApplicableLegislation" : "eu_2023_138",
+        "GDNDatasetMetadata:GDNhvdCategory" : [ "energy_resources", "env_monitoring", "area_management" ]
+      },
+      "GDNDatasetMetadata:GDNtheme" : "tech",
+      "citation:depositor" : "Admin, Dataverse",
+      "title" : "test",
+      "GDNDatasetMetadata:GDNpublisher" : "geo_survey_nl",
+      "dateOfDeposit" : "2025-12-17",
+      "GDNDatasetMetadata:GDNaccessRights" : "restricted",
+      "GDNDatasetMetadata:GDNdomain" : "geothermal_energy",
+      "GDNDatasetMetadata:GDNidentifier" : "Test",
+      "subject" : "Earth and Environmental Sciences",
+      "@id" : "https://doi.org/10.83300/GDN/4MEPY2",
+      "@type" : [ "ore:Aggregation", "schema:Dataset" ],
+      "schema:version" : "4.0",
+      "schema:name" : "test",
+      "schema:dateModified" : "2025-12-18 14:56:06.989",
+      "schema:datePublished" : "2025-12-17",
+      "schema:creativeWorkStatus" : "RELEASED",
+      "schema:license" : "http://creativecommons.org/publicdomain/zero/1.0",
+      "dvcore:fileTermsOfAccess" : {
+        "dvcore:fileRequestAccess" : true
+      },
+      "schema:includedInDataCatalog" : "Root",
+      "schema:isPartOf" : {
+        "schema:name" : "Root",
+        "@id" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/dataverse/root",
+        "schema:description" : "The root dataverse."
+      },
+      "ore:aggregates" : [ {
+        "schema:name" : "CPU Utilization (1).xlsx",
+        "dvcore:restricted" : false,
+        "schema:version" : 1,
+        "dvcore:datasetVersionId" : 4,
+        "@id" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=3",
+        "schema:sameAs" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/3?format=original",
+        "@type" : "ore:AggregatedResource",
+        "schema:fileFormat" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "dvcore:filesize" : 15441,
+        "dvcore:storageIdentifier" : "local://19b2c115b77-f861d0d485f2",
+        "dvcore:currentIngestedName" : "CPU Utilization (1).tab",
+        "dvcore:UNF" : "UNF:6:0WEcnD0cAy+0OAxMv05cKg==",
+        "dvcore:rootDataFileId" : -1,
+        "dvcore:checksum" : {
+          "@type" : "MD5",
+          "@value" : "f40d06503f00c8df28bc3d9cd7f28f8e"
+        }
+      }, {
+        "schema:name" : "dcat-root.properties",
+        "dvcore:restricted" : false,
+        "schema:version" : 1,
+        "dvcore:datasetVersionId" : 4,
+        "@id" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=4",
+        "schema:sameAs" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/4",
+        "@type" : "ore:AggregatedResource",
+        "schema:fileFormat" : "application/octet-stream",
+        "dvcore:filesize" : 3168,
+        "dvcore:storageIdentifier" : "local://19b31b0f547-18671ce3ac27",
+        "dvcore:rootDataFileId" : -1,
+        "dvcore:checksum" : {
+          "@type" : "MD5",
+          "@value" : "c06407eca8f8bb295b6c9174ad936acc"
+        }
+      }, {
+        "schema:name" : "export.rdf",
+        "dvcore:restricted" : false,
+        "schema:version" : 1,
+        "dvcore:datasetVersionId" : 4,
+        "@id" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=6",
+        "schema:sameAs" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/6",
+        "@type" : "ore:AggregatedResource",
+        "schema:fileFormat" : "application/rdf+xml",
+        "dvcore:filesize" : 3918,
+        "dvcore:storageIdentifier" : "local://19b31f5e7e9-ad8790009d0e",
+        "dvcore:rootDataFileId" : -1,
+        "dvcore:checksum" : {
+          "@type" : "MD5",
+          "@value" : "e2b46812ace1c85600ca43e085bbdb26"
+        }
+      }, {
+        "schema:name" : "Invictus-inschrijfformulier-junioren-230323.pdf",
+        "dvcore:restricted" : false,
+        "schema:version" : 1,
+        "dvcore:datasetVersionId" : 4,
+        "@id" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=5",
+        "schema:sameAs" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/5",
+        "@type" : "ore:AggregatedResource",
+        "schema:fileFormat" : "application/pdf",
+        "dvcore:filesize" : 190223,
+        "dvcore:storageIdentifier" : "local://19b31b15635-ca843e231b04",
+        "dvcore:rootDataFileId" : -1,
+        "dvcore:checksum" : {
+          "@type" : "MD5",
+          "@value" : "222a22c84686ccbd541a29c19784001b"
+        }
+      } ],
+      "schema:hasPart" : [ "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=3", "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=4", "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=6", "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/file.xhtml?fileId=5" ]
+    },
+    "@context" : {
+      "GDNDatasetMetadata" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/schema/GDNDatasetMetadata#",
+      "author" : "http://purl.org/dc/terms/creator",
+      "citation" : "https://dataverse.org/schema/citation/",
+      "dateOfDeposit" : "http://purl.org/dc/terms/dateSubmitted",
+      "dcterms" : "http://purl.org/dc/terms/",
+      "dvcore" : "https://dataverse.org/schema/core#",
+      "ore" : "http://www.openarchives.org/ore/terms/",
+      "schema" : "http://schema.org/",
+      "subject" : "http://purl.org/dc/terms/subject",
+      "title" : "http://purl.org/dc/terms/title"
+    }
+  },
+  "datasetFileDetails" : [ {
+    "id" : 3,
+    "persistentId" : "",
+    "filename" : "CPU Utilization (1).tab",
+    "contentType" : "text/tab-separated-values",
+    "friendlyType" : "Tab-Delimited",
+    "filesize" : 9503,
+    "storageIdentifier" : "local://19b2c115b77-f861d0d485f2",
+    "originalFileFormat" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "originalFormatLabel" : "MS Excel Spreadsheet",
+    "originalFileSize" : 15441,
+    "originalFileName" : "CPU Utilization (1).xlsx",
+    "UNF" : "UNF:6:0WEcnD0cAy+0OAxMv05cKg==",
+    "rootDataFileId" : -1,
+    "md5" : "f40d06503f00c8df28bc3d9cd7f28f8e",
+    "checksum" : {
+      "type" : "MD5",
+      "value" : "f40d06503f00c8df28bc3d9cd7f28f8e"
+    },
+    "tabularData" : true,
+    "creationDate" : "2025-12-17",
+    "publicationDate" : "2025-12-17",
+    "fileAccessRequest" : true,
+    "restricted" : false,
+    "fileMetadataId" : 8,
+    "dataTables" : [ {
+      "varQuantity" : 3,
+      "caseQuantity" : 239,
+      "UNF" : "UNF:6:0WEcnD0cAy+0OAxMv05cKg==",
+      "dataVariables" : [ {
+        "id" : 3,
+        "name" : "Environment",
+        "label" : "Environment",
+        "weighted" : false,
+        "variableIntervalType" : "discrete",
+        "variableFormatType" : "CHARACTER",
+        "isOrderedCategorical" : false,
+        "fileOrder" : 0,
+        "UNF" : "UNF:6:8TyzIrCVDdjMNmNswpZ+tQ==",
+        "variableMetadata" : [ ]
+      }, {
+        "id" : 1,
+        "name" : "Application",
+        "label" : "Application",
+        "weighted" : false,
+        "variableIntervalType" : "discrete",
+        "variableFormatType" : "CHARACTER",
+        "isOrderedCategorical" : false,
+        "fileOrder" : 1,
+        "UNF" : "UNF:6:oPxINGf0flMZ9+c4rBkJWw==",
+        "variableMetadata" : [ ]
+      }, {
+        "id" : 2,
+        "name" : "CPURequest",
+        "label" : "CPURequest",
+        "weighted" : false,
+        "variableIntervalType" : "contin",
+        "variableFormatType" : "NUMERIC",
+        "isOrderedCategorical" : false,
+        "fileOrder" : 2,
+        "UNF" : "UNF:6:dFs5oQx+rK7lrJI3EjL0RA==",
+        "variableMetadata" : [ ],
+        "summaryStatistics" : {
+          "mean" : "157.56302521008377",
+          "vald" : "238.0",
+          "stdev" : "1222.9566382538005",
+          "invd" : "1.0",
+          "max" : "18750.0",
+          "mode" : ".",
+          "min" : "25.0",
+          "medn" : "50.0"
+        }
+      } ]
+    } ],
+    "varGroups" : [ ]
+  }, {
+    "id" : 4,
+    "persistentId" : "",
+    "filename" : "dcat-root.properties",
+    "contentType" : "application/octet-stream",
+    "friendlyType" : "Unknown",
+    "filesize" : 3168,
+    "storageIdentifier" : "local://19b31b0f547-18671ce3ac27",
+    "rootDataFileId" : -1,
+    "md5" : "c06407eca8f8bb295b6c9174ad936acc",
+    "checksum" : {
+      "type" : "MD5",
+      "value" : "c06407eca8f8bb295b6c9174ad936acc"
+    },
+    "tabularData" : false,
+    "creationDate" : "2025-12-18",
+    "publicationDate" : "2025-12-18",
+    "fileAccessRequest" : true,
+    "restricted" : false,
+    "fileMetadataId" : 5,
+    "varGroups" : [ ]
+  }, {
+    "id" : 6,
+    "persistentId" : "",
+    "filename" : "export.rdf",
+    "contentType" : "application/rdf+xml",
+    "friendlyType" : "application/rdf+xml",
+    "filesize" : 3918,
+    "storageIdentifier" : "local://19b31f5e7e9-ad8790009d0e",
+    "rootDataFileId" : -1,
+    "md5" : "e2b46812ace1c85600ca43e085bbdb26",
+    "checksum" : {
+      "type" : "MD5",
+      "value" : "e2b46812ace1c85600ca43e085bbdb26"
+    },
+    "tabularData" : false,
+    "creationDate" : "2025-12-18",
+    "publicationDate" : "2025-12-18",
+    "fileAccessRequest" : true,
+    "restricted" : false,
+    "fileMetadataId" : 6,
+    "varGroups" : [ ]
+  }, {
+    "id" : 5,
+    "persistentId" : "",
+    "filename" : "Invictus-inschrijfformulier-junioren-230323.pdf",
+    "contentType" : "application/pdf",
+    "friendlyType" : "Adobe PDF",
+    "filesize" : 190223,
+    "storageIdentifier" : "local://19b31b15635-ca843e231b04",
+    "rootDataFileId" : -1,
+    "md5" : "222a22c84686ccbd541a29c19784001b",
+    "checksum" : {
+      "type" : "MD5",
+      "value" : "222a22c84686ccbd541a29c19784001b"
+    },
+    "tabularData" : false,
+    "creationDate" : "2025-12-18",
+    "publicationDate" : "2025-12-18",
+    "fileAccessRequest" : true,
+    "restricted" : false,
+    "fileMetadataId" : 7,
+    "varGroups" : [ ]
+  } ],
+  "datasetSchemaDotOrg" : {
+    "@context" : "http://schema.org",
+    "@type" : "Dataset",
+    "@id" : "https://doi.org/10.83300/GDN/4MEPY2",
+    "identifier" : "https://doi.org/10.83300/GDN/4MEPY2",
+    "name" : "test",
+    "creator" : [ {
+      "@type" : "Person",
+      "givenName" : "Dataverse",
+      "familyName" : "Admin",
+      "affiliation" : {
+        "@type" : "Organization",
+        "name" : "Dataverse.org"
+      },
+      "name" : "Admin, Dataverse"
+    } ],
+    "author" : [ {
+      "@type" : "Person",
+      "givenName" : "Dataverse",
+      "familyName" : "Admin",
+      "affiliation" : {
+        "@type" : "Organization",
+        "name" : "Dataverse.org"
+      },
+      "name" : "Admin, Dataverse"
+    } ],
+    "datePublished" : "2025-12-17",
+    "dateModified" : "2025-12-18",
+    "version" : "4",
+    "description" : "sdasdsa",
+    "keywords" : [ "Earth and Environmental Sciences" ],
+    "license" : "http://creativecommons.org/publicdomain/zero/1.0",
+    "includedInDataCatalog" : {
+      "@type" : "DataCatalog",
+      "name" : "Root",
+      "url" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan"
+    },
+    "publisher" : {
+      "@type" : "Organization",
+      "name" : "Root"
+    },
+    "provider" : {
+      "@type" : "Organization",
+      "name" : "Root"
+    },
+    "distribution" : [ {
+      "@type" : "DataDownload",
+      "name" : "CPU Utilization (1).tab",
+      "encodingFormat" : "text/tab-separated-values",
+      "contentSize" : 9503,
+      "contentUrl" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/3"
+    }, {
+      "@type" : "DataDownload",
+      "name" : "dcat-root.properties",
+      "encodingFormat" : "application/octet-stream",
+      "contentSize" : 3168,
+      "contentUrl" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/4"
+    }, {
+      "@type" : "DataDownload",
+      "name" : "export.rdf",
+      "encodingFormat" : "application/rdf+xml",
+      "contentSize" : 3918,
+      "contentUrl" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/6"
+    }, {
+      "@type" : "DataDownload",
+      "name" : "Invictus-inschrijfformulier-junioren-230323.pdf",
+      "encodingFormat" : "application/pdf",
+      "contentSize" : 190223,
+      "contentUrl" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/5"
+    } ]
+  },
+  "dataCiteXml" : {
+    "schemaLocation" : "http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.5/metadata.xsd",
+    "identifier" : {
+      "identifierType" : "DOI",
+      "" : "10.83300/GDN/4MEPY2"
+    },
+    "creators" : {
+      "creator" : {
+        "creatorName" : {
+          "nameType" : "Personal",
+          "" : "Admin, Dataverse"
+        },
+        "givenName" : "Dataverse",
+        "familyName" : "Admin",
+        "affiliation" : "Dataverse.org"
+      }
+    },
+    "titles" : {
+      "title" : "test"
+    },
+    "publisher" : "Root",
+    "publicationYear" : "2025",
+    "subjects" : {
+      "subject" : "Earth and Environmental Sciences"
+    },
+    "contributors" : {
+      "contributor" : {
+        "contributorType" : "ContactPerson",
+        "contributorName" : {
+          "nameType" : "Personal",
+          "" : "Admin, Dataverse"
+        },
+        "givenName" : "Dataverse",
+        "familyName" : "Admin",
+        "affiliation" : "Dataverse.org"
+      }
+    },
+    "dates" : {
+      "date" : [ {
+        "dateType" : "Submitted",
+        "" : "2025-12-17"
+      }, {
+        "dateType" : "Available",
+        "" : "2025-12-17"
+      }, {
+        "dateType" : "Updated",
+        "" : "2025-12-18"
+      } ]
+    },
+    "resourceType" : {
+      "resourceTypeGeneral" : "Dataset"
+    },
+    "sizes" : {
+      "size" : [ "9503", "3168", "190223", "3918" ]
+    },
+    "formats" : {
+      "format" : [ "text/tab-separated-values", "application/octet-stream", "application/pdf", "application/rdf+xml" ]
+    },
+    "version" : "4.0",
+    "rightsList" : {
+      "rights" : [ {
+        "rightsURI" : "info:eu-repo/semantics/openAccess"
+      }, {
+        "rightsURI" : "http://creativecommons.org/publicdomain/zero/1.0",
+        "rightsIdentifier" : "CC0-1.0",
+        "rightsIdentifierScheme" : "SPDX",
+        "schemeURI" : "https://spdx.org/licenses/",
+        "lang" : "en",
+        "" : "Creative Commons CC0 1.0 Universal Public Domain Dedication."
+      } ]
+    },
+    "descriptions" : {
+      "description" : {
+        "descriptionType" : "Abstract",
+        "" : "sdasdsa"
+      }
+    }
+  }
+}

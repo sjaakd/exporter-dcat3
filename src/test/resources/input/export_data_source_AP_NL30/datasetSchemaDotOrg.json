@@ -1,0 +1,71 @@
+{
+  "@context" : "http://schema.org",
+  "@type" : "Dataset",
+  "@id" : "https://doi.org/10.83300/GDN/4MEPY2",
+  "identifier" : "https://doi.org/10.83300/GDN/4MEPY2",
+  "name" : "test",
+  "creator" : [ {
+    "@type" : "Person",
+    "givenName" : "Dataverse",
+    "familyName" : "Admin",
+    "affiliation" : {
+      "@type" : "Organization",
+      "name" : "Dataverse.org"
+    },
+    "name" : "Admin, Dataverse"
+  } ],
+  "author" : [ {
+    "@type" : "Person",
+    "givenName" : "Dataverse",
+    "familyName" : "Admin",
+    "affiliation" : {
+      "@type" : "Organization",
+      "name" : "Dataverse.org"
+    },
+    "name" : "Admin, Dataverse"
+  } ],
+  "datePublished" : "2025-12-17",
+  "dateModified" : "2025-12-18",
+  "version" : "4",
+  "description" : "sdasdsa",
+  "keywords" : [ "Earth and Environmental Sciences" ],
+  "license" : "http://creativecommons.org/publicdomain/zero/1.0",
+  "includedInDataCatalog" : {
+    "@type" : "DataCatalog",
+    "name" : "Root",
+    "url" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan"
+  },
+  "publisher" : {
+    "@type" : "Organization",
+    "name" : "Root"
+  },
+  "provider" : {
+    "@type" : "Organization",
+    "name" : "Root"
+  },
+  "distribution" : [ {
+    "@type" : "DataDownload",
+    "name" : "CPU Utilization (1).tab",
+    "encodingFormat" : "text/tab-separated-values",
+    "contentSize" : 9503,
+    "contentUrl" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/3"
+  }, {
+    "@type" : "DataDownload",
+    "name" : "dcat-root.properties",
+    "encodingFormat" : "application/octet-stream",
+    "contentSize" : 3168,
+    "contentUrl" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/4"
+  }, {
+    "@type" : "DataDownload",
+    "name" : "export.rdf",
+    "encodingFormat" : "application/rdf+xml",
+    "contentSize" : 3918,
+    "contentUrl" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/6"
+  }, {
+    "@type" : "DataDownload",
+    "name" : "Invictus-inschrijfformulier-junioren-230323.pdf",
+    "encodingFormat" : "application/pdf",
+    "contentSize" : 190223,
+    "contentUrl" : "https://dataverse-devops-tst.apps.geo-dev.gdnnet.lan/api/access/datafile/5"
+  } ]
+}

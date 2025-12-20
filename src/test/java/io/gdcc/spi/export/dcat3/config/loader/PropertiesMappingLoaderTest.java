@@ -5,10 +5,11 @@ import static io.gdcc.spi.export.util.AssertionsUtil.assertValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.InputStream;
+
 import io.gdcc.spi.export.dcat3.config.model.NodeTemplate;
 import io.gdcc.spi.export.dcat3.config.model.ResourceConfig;
 import io.gdcc.spi.export.dcat3.config.model.ValueSource;
-import java.io.InputStream;
 import org.junit.jupiter.api.Test;
 
 public class PropertiesMappingLoaderTest {
@@ -22,7 +23,7 @@ public class PropertiesMappingLoaderTest {
 
     @Test
     void loads_subject() throws Exception {
-        ResourceConfig resourceConfig = load("input/config_2/dcat-catalog.properties");
+        ResourceConfig resourceConfig = load("input/config_AP_NL30/dcat-catalog.properties");
 
         assertThat(resourceConfig.subject().iriConst())
                 .isEqualTo("https://data.example.org/catalog/gdn-test");
@@ -32,7 +33,7 @@ public class PropertiesMappingLoaderTest {
 
     @Test
     void loads_literal_properties_with_lang_and_json_or_const() throws Exception {
-        ResourceConfig resourceConfig = load("input/config_2/dcat-catalog.properties");
+        ResourceConfig resourceConfig = load("input/config_AP_NL30/dcat-catalog.properties");
 
         ValueSource titleEn = resourceConfig.props().get("title_en");
         assertValueSource(
@@ -61,7 +62,7 @@ public class PropertiesMappingLoaderTest {
 
     @Test
     void loads_node_ref_properties_and_node_templates() throws Exception {
-        ResourceConfig resourceConfig = load("input/config_2/dcat-catalog.properties");
+        ResourceConfig resourceConfig = load("input/config_AP_NL30/dcat-catalog.properties");
 
         // contact node-ref property
         ValueSource cp = resourceConfig.props().get("contactPoint");
@@ -112,17 +113,7 @@ public class PropertiesMappingLoaderTest {
         // publisher node template
         NodeTemplate publisher = resourceConfig.nodes().get("publisher");
         assertNodeTemplate(publisher, "publisher", "bnode", null, "foaf:Agent");
-        assertThat(publisher.props()).hasSize(3);
-        assertValueSource(
-                publisher.props().get("type"),
-                "iri",
-                "dct:type",
-                null,
-                null,
-                null,
-                "https://ror.org/01bnjb948",
-                null,
-                false);
+        assertThat(publisher.props()).hasSize(2 );
         assertValueSource(
                 publisher.props().get("name_nl"),
                 "literal",

@@ -1,188 +1,162 @@
-
-@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix adms: <http://www.w3.org/ns/adms#> .
+@prefix dct: <http://purl.org/dc/terms/> .
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
-@prefix dct:  <http://purl.org/dc/terms/> .
-@prefix vcard:<http://www.w3.org/2006/vcard/ns#> .
+@prefix dcatap: <http://data.europa.eu/r5r/> .
+@prefix eli: <http://data.europa.eu/eli/ontology#> .
+@prefix eush: <https://purl.eu/ns/shacl#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
-@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
-@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix eli:  <http://data.europa.eu/eli/ontology#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-########### Dataset shape ###########
-# Ensures a dcat:Dataset has title(s), identifier, accessRights, at least one keyword,
-# at least one contactPoint (vcard:Kind node), and at least one distribution.
-# Also checks that publisher (foaf:Agent) exists if present.
+@prefix dcatapnl-sh: <http://modellen.geostandaarden.nl/dcat-ap-nl/id/shape/> .
 
-dcat:DatasetShape
-  a sh:NodeShape ;
-  sh:targetClass dcat:Dataset ;
+###########################################
+#  dcat:Dataset
+###########################################
 
-  # dct:title must exist (language-tagged string)
-  sh:property [
-    sh:path dct:title ;
-    sh:minCount 1 ;
-    sh:datatype rdf:langString ;
-  ] ;
-
-  # dct:identifier must exist (string is fine for your output)
-  sh:property [
-    sh:path dct:identifier ;
-    sh:minCount 1 ;
-    sh:datatype xsd:string ;
-  ] ;
-
-  # dct:accessRights must exist and be an IRI (you use EU authority URI)
-  sh:property [
-    sh:path dct:accessRights ;
-    sh:minCount 1 ;
-    sh:nodeKind sh:IRI ;
-  ] ;
-
-  # dcat:keyword at least one (language-tagged string)
-  sh:property [
-    sh:path dcat:keyword ;
-    sh:minCount 1 ;
-    sh:datatype rdf:langString ;
-  ] ;
-
-  # dcat:contactPoint present and points to a vcard:Kind node
-  sh:property [
-    sh:path dcat:contactPoint ;
-    sh:minCount 1 ;
-    sh:nodeKind sh:BlankNodeOrIRI ;
-    sh:node vcard:KindShape ;
-  ] ;
-
-  # dcat:distribution at least one and points to a dcat:Distribution node
-  sh:property [
-    sh:path dcat:distribution ;
-    sh:minCount 1 ;
-    sh:nodeKind sh:BlankNodeOrIRI ;
-    sh:node dcat:DistributionShape ;
-  ] ;
-
-  # dct:publisher (optional in generic DCAT, but common in DCAT-AP). If present, must be foaf:Agent
-  sh:property [
-    sh:path dct:publisher ;
-    sh:maxCount 1 ;
-    sh:nodeKind sh:BlankNodeOrIRI ;
-    sh:node foaf:AgentShape ;
-  ] ;
+dcatapnl-sh:DatasetShape_aanbevolen a sh:NodeShape;
+  sh:name "Dataset"@en;
+  sh:targetClass dcat:Dataset;
+  sh:property
+    dcatapnl-sh:DatasetShape_conformsTo_aanbevolen_minCount,
+    dcatapnl-sh:DatasetShape_documentation_aanbevolen_minCount,
+    dcatapnl-sh:DatasetShape_landingPage_aanbevolen_minCount,
+    dcatapnl-sh:DatasetShape_language_aanbevolen_minCount
 .
 
-########### Distribution shape ###########
-
-dcat:DistributionShape
-  a sh:NodeShape ;
-  sh:targetClass dcat:Distribution ;
-
-  # accessURL must exist and be an IRI
-  sh:property [
-    sh:path dcat:accessURL ;
-    sh:minCount 1 ;
-    sh:nodeKind sh:IRI ;
-  ] ;
-
-  # dct:license if present must be IRI
-  sh:property [
-    sh:path dct:license ;
-    sh:maxCount 1 ;
-    sh:nodeKind sh:IRI ;
-  ] ;
-
-  # j.0:applicableLegislation if present must be IRI
-  sh:property [
-    sh:path <dcatap:applicableLegislation> ;
-    sh:nodeKind sh:IRI ;
-  ] ;
+dcatapnl-sh:DatasetShape_conformsTo_aanbevolen_minCount
+  sh:path dct:conformsTo;
+  sh:minCount 1;
+  sh:severity sh:Warning;
+  eush:message "It is recommended to specify conforms to."@en;
 .
 
-########### Catalog shape ###########
-
-dcat:CatalogShape
-  a sh:NodeShape ;
-  sh:targetClass dcat:Catalog ;
-
-  # title must exist (language-tagged string)
-  sh:property [
-    sh:path dct:title ;
-    sh:minCount 1 ;
-    sh:datatype rdf:langString ;
-  ] ;
-
-  # description if present should be language-tagged
-  sh:property [
-    sh:path dct:description ;
-    sh:datatype rdf:langString ;
-  ] ;
-
-  # publisher must be foaf:Agent node
-  sh:property [
-    sh:path dct:publisher ;
-    sh:minCount 1 ;
-    sh:nodeKind sh:BlankNodeOrIRI ;
-    sh:node foaf:AgentShape ;
-  ] ;
-
-  # contactPoint present and points to vcard:Kind
-  sh:property [
-    sh:path dcat:contactPoint ;
-    sh:minCount 1 ;
-    sh:node vcard:KindShape ;
-  ] ;
-
-  # dataset linkage; if present, it must be IRI/blank node of type dcat:Dataset
-  sh:property [
-    sh:path dcat:dataset ;
-    sh:nodeKind sh:BlankNodeOrIRI ;
-    sh:node dcat:DatasetShape ;
-  ] ;
+dcatapnl-sh:DatasetShape_documentation_aanbevolen_minCount
+  sh:path foaf:page	;
+  sh:minCount 1;
+  sh:severity sh:Warning;
+  eush:message "It is recommended to specify documentation."@en;
 .
 
-########### vCard Kind shape ###########
-
-vcard:KindShape
-  a sh:NodeShape ;
-  sh:targetClass vcard:Kind ;
-
-  # vcard:fn must exist (language-tagged)
-  sh:property [
-    sh:path vcard:fn ;
-    sh:minCount 1 ;
-    sh:datatype rdf:langString ;
-  ] ;
-
-  # vcard:hasEmail must exist and be IRI (mailto:)
-  sh:property [
-    sh:path vcard:hasEmail ;
-    sh:minCount 1 ;
-    sh:nodeKind sh:IRI ;
-  ] ;
-
-  # vcard:hasURL must exist and be IRI (https:)
-  sh:property [
-    sh:path vcard:hasURL ;
-    sh:minCount 1 ;
-    sh:nodeKind sh:IRI ;
-  ] ;
+dcatapnl-sh:DatasetShape_landingPage_aanbevolen_minCount
+  sh:path dcat:landingPage;
+  sh:minCount 1;
+  sh:severity sh:Warning;
+  eush:message "It is recommended to specify landing page."@en;
 .
 
-########### FOAF Agent shape ###########
+dcatapnl-sh:DatasetShape_language_aanbevolen_minCount
+  sh:path dct:language;
+  sh:minCount 1;
+  sh:severity sh:Warning;
+  eush:message "It is recommended to specify language."@en;
+.
 
-foaf:AgentShape
-  a sh:NodeShape ;
-  sh:targetClass foaf:Agent ;
+###########################################
+#  dcat:Distribution
+###########################################
 
-  # foaf:name must exist (at least one; language-tagged string)
-  sh:property [
-    sh:path foaf:name ;
-    sh:minCount 1 ;
-    sh:datatype rdf:langString ;
-  ] ;
+dcatapnl-sh:DistributionShape_aanbevolen a sh:NodeShape;
+  sh:name "Distribution"@en;
+  sh:targetClass dcat:Distribution;
+  sh:property
+    dcatapnl-sh:DistributionShape_accessService_aanbevolen_minCount,
+    dcatapnl-sh:DistributionShape_downloadURL_aanbevolen_minCount,
+    dcatapnl-sh:DistributionShape_language_aanbevolen_minCount,
+    dcatapnl-sh:DistributionShape_linkedSchemas_aanbevolen_minCount
+.
 
-  # dct:type if present must be IRI (you use ROR URI)
-  sh:property [
-    sh:path dct:type ;
-    sh:nodeKind sh:IRI ;
-    ] ; .
+dcatapnl-sh:DistributionShape_accessService_aanbevolen_minCount
+  sh:path dcat:accessService;
+  sh:minCount 1;
+  sh:severity sh:Warning;
+  eush:message "It is recommended to specify access service."@en;
+.
 
+dcatapnl-sh:DistributionShape_downloadURL_aanbevolen_minCount
+  sh:path dcat:downloadURL;
+  sh:minCount 1;
+  sh:severity sh:Warning;
+  eush:message "It is recommended to specify download URL."@en;
+.
+
+dcatapnl-sh:DistributionShape_language_aanbevolen_minCount
+  sh:path dct:language;
+  sh:minCount 1;
+  sh:severity sh:Warning;
+  eush:message "It is recommended to specify language."@en;
+.
+
+dcatapnl-sh:DistributionShape_linkedSchemas_aanbevolen_minCount
+  sh:path dct:conformsTo;
+  sh:minCount 1;
+  sh:severity sh:Warning;
+  eush:message "It is recommended to specify linked schemas."@en;
+.
+
+
+###########################################
+#  dcat:DataService
+###########################################
+
+dcatapnl-sh:DataServiceShape_aanbevolen a sh:NodeShape;
+  sh:name "DataService"@en;
+  sh:targetClass dcat:DataService;
+  sh:property
+    dcatapnl-sh:DataServiceShape_creator_aanbevolen_minCount,
+    dcatapnl-sh:DataServiceShape_keyword_aanbevolen_minCount,
+    dcatapnl-sh:DataServiceShape_language_aanbevolen_minCount
+.
+
+dcatapnl-sh:DataServiceShape_creator_aanbevolen_minCount
+  sh:path dct:creator;
+  sh:minCount 1;
+  sh:severity sh:Warning;
+  eush:message "It is recommended to specify creator."@en;
+.
+
+dcatapnl-sh:DataServiceShape_keyword_aanbevolen_minCount
+  sh:path dcat:keyword;
+  sh:minCount 1;
+  sh:severity sh:Warning;
+  eush:message "It is recommended to specify keyword."@en;
+.
+
+dcatapnl-sh:DataServiceShape_language_aanbevolen_minCount
+  sh:path dct:language;
+  sh:minCount 1;
+  sh:severity sh:Warning;
+  eush:message "It is recommended to specify language."@en;
+.
+
+###########################################
+#  dcat:Catalog
+###########################################
+
+dcatapnl-sh:CatalogShape_aanbevolen a sh:NodeShape;
+  sh:name "Catalog"@en;
+  sh:targetClass dcat:Catalog;
+  sh:property
+    dcatapnl-sh:CatalogShape_creator_aanbevolen_minCount
+.
+
+dcatapnl-sh:CatalogShape_creator_aanbevolen_minCount
+  sh:path dct:creator;
+  sh:minCount 1;
+  sh:severity sh:Warning;
+  eush:message "It is recommended to specify creator."@en;
+.
+
+###########################################
+#  dcat:DatasetSeries
+###########################################
+
+
+###########################################
+#  dcat:CatalogRecord
+###########################################
