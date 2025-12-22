@@ -97,20 +97,9 @@ To add a new DCAT element:
 2. Provide the resource mapping rules in the config file.
 3. (Optional) Update SHACL shapes if the element introduces new constraints.
 
-
 ## TODO
-- **Validate input `.properties` configuration**  
-  Ensure robust checks for required keys, value types, and fallback defaults.
-
-- **Extend unit test coverage**  
-  Cover edge cases in configuration parsing, mapping logic, and serialization.
-
 - **Split TSV file**  
   Separate into:
     - A **DCAT‑AP‑NL 3.0 extension** of the metadata.
     - An **organization-specific TSV** for custom fields.
 
-- **Review current `.properties` configuration mapping capabilities**  
-  Add support for:
-    - Optional flags.
-    - Default values.
