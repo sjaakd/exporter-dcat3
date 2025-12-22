@@ -1,69 +1,107 @@
-# DCAT-AP-NL 3.0 Mapping for Dataverse (GDN)
+# DCAT‑AP‑NL 3.0 Mapping Package for Dataverse (GDN)
 
-This package contains properties mapping files to generate DCAT/DCAT-AP-NL 3.0
-RDF from Dataverse exports. It is tailored for the Geological Survey of the Netherlands (GDN)
-and aligned to the **Geonovum DCAT-AP-NL 3.0 SHACL** shapes.
+This package contains mapping configurations to convert Dataverse JSON into **DCAT‑AP‑NL 3.0–compliant RDF**. It covers Dataset, Distribution, DataService, and Catalog metadata. 🗺️
 
-## Files
+---
 
-- `dcat-root.txt` — root configuration (prefixes, elements, relations).
-- `dcat-dataset.txt` — Dataset mapping (`dcat:Dataset`).
-- `dcat-distribution.txt` — Distribution mapping (`dcat:Distribution`).
-- `dcat-dataservice.txt` — DataService mapping (`dcat:DataService`).
+## Files Included
+- **dcat-root.txt**: Defines prefixes, DCAT elements, and structural relations.
+- **dcat-dataset.txt**: Maps Dataverse dataset-level metadata to DCAT fields.
+- **dcat-distribution.txt**: Maps file-level metadata to DCAT distributions.
+- **dcat-dataservice.txt**: Defines and populates the DataService node for the Dataverse API.
+- **dcat-catalog.txt**: Maps catalog-wide metadata including contact and publisher.
 
-## Key compliance notes (why these properties are present)
+---
 
-### Distribution (`dcat:Distribution`)
-- **`dcat:byteSize`** is typed as `xsd:nonNegativeInteger` (NL SHACL expects non-negative integer).
-- **`dcat:mediaType`** is a **node** typed as `dct:MediaType` with an **IANA media type URI**.
-- **`dct:language`** is present (ENG) and typed as `dct:LinguisticSystem`.
-- **`dct:conformsTo`** is present, using a minimal `dct:Standard` node.
-- **`dcat:accessURL` / `dcat:downloadURL`** are emitted as **typed `rdfs:Resource` nodes**.
-- **`dct:rights`** is a node typed as `dct:RightsStatement` (EU Access Rights NAL).
-- **`dct:license`** is a node typed as `dct:LicenseDocument`.
-- **`dcat:accessService`** points to a typed **`dcat:DataService`** (`http://localhost:8080/api/`).
-- **SPDX checksum**: `spdx:checksumValue` is `xsd:hexBinary`; `spdx:algorithm` is typed as `spdx:ChecksumAlgorithm`.
+## How the Mapping Works
 
-### Dataset (`dcat:Dataset`)
-- **`dcat:landingPage`** and **`foaf:page`** are typed as **`foaf:Document`** (web page).
-- **`dct:language`** present (ENG) and typed.
-- **`dct:conformsTo`** minimal `dct:Standard` node present.
-- **`dct:accessRights`** is a node typed as `dct:RightsStatement`.
-- **`dcat:theme`** is a `skos:Concept`; we provide a local `skos:prefLabel` so SHACL does not need remote vocab fetch.
-- **Creators/Publisher** are **FOAF Agents**; if organizational identifiers (e.g., ROR) exist, they are used as IRIs.
-- **`dcatap:applicableLegislation`** is typed as **`eli:LegalResource`**.
+### 1. dcat-root.txt
+Defines global prefixes, including DCAT, DCT, FOAF, VCARD, SKOS, LOCN, GeoSPARQL, SPDX, RDF, OWL, and ELI. Configures element declarations and their relationships—e.g., linking datasets to catalogs and services.
 
-### DataService (`dcat:DataService`)
-The NL shapes enforce many `minCount=1` constraints on DataService. We therefore include:
-- **Title, Description, Identifier**
-- **Endpoint URL** (typed `rdfs:Resource`) and **Endpoint Description** (typed `foaf:Document`)
-- **Language (ENG)**, **Keywords**, **Access Rights (PUBLIC)**
-- **Theme** (`skos:Concept` + `prefLabel`), **License** (`dct:LicenseDocument`)
-- **Publisher** and **Creator** as `foaf:Agent`
-- **Contact Point** as `vcard:Kind`
+### 2. dcat-dataset.txt
+Translates dataset metadata into key DCAT entities:
+- **Identifiers**: DOI mapped to `dct:identifier`.
+- **Title/Description**: Uses language-tagged literals (`en`).
+- **Landing pages**: Typed as `foaf:Document` (`dcat:landingPage`, `foaf:page`).
+- **Language**: Defaults to `ENG` via `dct:LinguisticSystem`.
+- **Conformance**: Adds a `dct:Standard` node for `dct:conformsTo`.
+- **Access Rights**: Typed as `dct:RightsStatement`.
+- **Themes**: Mapped to SKOS Concepts with local `skos:prefLabel` to satisfy SHACL.
+- **Creators/Publisher**: Modeled as FOAF Agents; ROR IDs used when available.
+- **High-Value Data (HVD) & Legislation**:
+   - **Latest Fix**: HVD categories now modeled as **typed SKOS Concepts** using `nodes.hvd` and `props.hvdCategory.node = hvd`. This satisfies:
+      - Exporter validation (`node-ref requires nodeRef`).
+      - SHACL class constraint (`skos:Concept` expected for `dcatap:hvdCategory`).
+   - Maps Dataverse values to official EU HVD category IRIs and attaches local `skos:prefLabel` for offline SHACL validation.
+- **Spatial Metadata**: Maps geospatial coverage to `dct:spatial` → `dct:Location` → `locn:Address` → structured address components; optional geometry nodes included.
 
-## Enablement (root)
-In `dcat-root.txt`, ensure these blocks exist:
+### 3. dcat-distribution.txt
+Translates file metadata into DCAT distributions:
+- **Byte size**: `dcat:byteSize` as `xsd:nonNegativeInteger`.
+- **Media type**: IANA type mapped to `dct:MediaType`.
+- **Access/download URLs**: Typed as `rdfs:Resource`.
+- **Rights & License**: Typed per DCT standards.
+- **Service**: Links to the API DataService node.
+- **Checksum**: Creates a SPDX `Checksum` node with a typed algorithm and hexBinary value. The algorithm is modeled as a blank node with `owl:sameAs` to standard IRIs, satisfying SHACL constraints.
 
-```properties
-element.dataservice.id    = dataservice
-element.dataservice.type  = dcat:DataService
-element.dataservice.file  = dcat-dataservice.properties
+### 4. dcat-dataservice.txt
+Captures metadata about the Dataverse API:
+- **Title/Description**: Human-readable info.
+- **Identifier**: API base URL.
+- **Endpoint**: `dcat:endpointURL` as `rdfs:Resource`.
+- **Endpoint Description**: Also typed `rdfs:Resource`.
+- **Language, Keywords, Access Rights, Theme, License**: Satisfy DCAT‑AP‑NL minCard constraints.
+- **Creator, Publisher, Contact**: Modeled similarly to dataset.
 
-relation.dataset_has_service.subject   = dataset
-relation.dataset_has_service.predicate = dcat:service
-relation.dataset_has_service.object    = dataservice
-```
+### 5. dcat-catalog.txt
+Maps the catalog to DCAT:
+- **Contact**: vCard `Kind` with full name, email, and URL.
+- **Publisher**: FOAF Agent with ROR linking and multilingual names.
+- **Creator**: Added as a FOAF Agent, meeting DCAT‑AP‑NL requirements.
 
-## Validation tips
-- Use the **Geonovum DCAT-AP-NL 3.0 SHACL** shapes to validate. They check class ranges and cardinalities strictly.
-- Ensure objects are **typed nodes** where required (`dct:MediaType`, `dct:RightsStatement`, `dct:LicenseDocument`, `foaf:Document`, `eli:LegalResource`, `skos:Concept`).
-- For `skos:Concept` values (e.g., themes), provide a local `skos:prefLabel`; SHACL validators generally **do not** fetch labels from the web.
-- For SPDX checksums, ensure `checksumValue` is `xsd:hexBinary` and the `algorithm` node is typed `spdx:ChecksumAlgorithm`.
+---
+
+## Geometry & Spatial Coverage 🚧
+Spatial coverage is mapped to addresses via `locn:Address`. Optionally, geometry support creates a `locn:Geometry` node with WKT via `geo:asWKT`, but spatial mapping is **not complete**. Additional forms like bounding boxes or circles are not currently implemented.
+
+### Dataverse Spatial Capabilities
+Dataverse supports:
+- **Bounding boxes** (min/max lat/lon), subject to validation rules.
+- Possibly **point geometry**, but circle/centerpoint models are not clearly supported in the JSON metadata.
+
+This template lays the foundation for geometry support, but further enhancements—like parsing bounding boxes into GeoSPARQL or LOCN geometries, or converting circles into WKT—will require additional logic.
+
+---
+
+## Usage & Next Steps
+1. Run your Dataverse export pipeline with JSON input.
+2. Apply these mapping files in your exporter to generate DCAT‑AP‑NL RDF.
+3. Validate using Geonovum’s SHACL shapes.
+4. Review logs and ensure no SHACL violations (geometry is optional).
+5. To enhance spatial coverage:
+   - Add JSONPath mappings for bounding-box fields.
+   - Convert bounding-box values to WKT Polygons (`geo:asWKT`).
+   - Expand mapping for circle/center-point data if present.
+
+---
+
+## Latest Updates
+- **HVD Category Fix**:
+   - Implemented dynamic node approach (`nodes.hvd`) typed as `skos:Concept`.
+   - Added `props.hvdCategory.node = hvd` for exporter compliance.
+   - Attached local `skos:prefLabel` for SHACL validation without remote fetch.
+- **Validation**:
+   - Exporter error `DCATRSC-105` resolved.
+   - SHACL class constraint for `skos:Concept` satisfied.
+- **Alternative Configs**:
+   - Option A (nodeRef flag) and Option B (IRI-only) provided for reference, but **Option C (typed node-ref)** is recommended for full compliance.
+
+---
 
 ## References
-- **DCAT v3 (W3C Recommendation, 2024)** — properties, classes, DataService modelling: https://www.w3.org/TR/vocab-dcat-3/
-- **DCAT-AP 3.0 (SEMIC, 2024)** — profile rules, cardinalities, guidance: https://semiceu.github.io/DCAT-AP/releases/3.0.0/
-- **Geonovum DCAT-AP-NL 3.0 SHACL** — validation shapes (strict minCounts & ranges): https://github.com/Geonovum/DCAT-AP-NL30/blob/main/shapes/dcat-ap-nl-SHACL.ttl
-- **IANA Media Types** — use as URIs for `dcat:mediaType`: https://www.iana.org/assignments/media-types/media-types.xhtml
-- **SPDX RDF Terms** — checksum and algorithm classes/properties: https://spdx.org/rdf/
+- **DCAT v3 (W3C)**: structure and modeling of DataService, Location, etc.
+- **DCAT‑AP 3.0 (SEMIC)**: thematic profile and NL constraints.
+- **LOCN Vocabulary**: for structured address modeling.
+- **GeoSPARQL**: WKT geometry modeling.
+- **SPDX RDF**: checksum typing and algorithm identity.
+- **Dataverse Geospatial**: bounding box validation insights.
