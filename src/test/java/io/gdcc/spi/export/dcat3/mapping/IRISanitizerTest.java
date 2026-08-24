@@ -11,7 +11,6 @@ import io.gdcc.spi.export.dcat3.mapping.IRISanitizer;
 class IRISanitizerTest {
 
     @ParameterizedTest(name = "buildValidUri(''{0}'') => ''{1}''")
-    // spotless:off
     @CsvSource({
         "http://example.org/simple, http://example.org/simple",
         "'https://example.org/a path?q=x y#z z', 'https://example.org/a%20path?q=x%20y#z%20z'",
@@ -21,14 +20,12 @@ class IRISanitizerTest {
         "'https://example.org/a%20b', 'https://example.org/a%2520b'",
         "'', ''"
     })
-    // spotless:on
     @DisplayName("Encode URI/IRI components using RFC 3986 safe characters")
     void buildValidUri_cases(String raw, String expected) {
         assertThat(IRISanitizer.buildValidUri(raw)).isEqualTo(expected);
     }
 
     @ParameterizedTest(name = "buildValidIri(''{0}'') => ''{1}''")
-    // spotless:off
     @CsvSource({
         "'https://example.org/café', 'https://example.org/café'",
         "'https://example.org/東京?q=naïve#crème brûlée', 'https://example.org/東京?q=naïve#crème%20brûlée'",
@@ -36,7 +33,6 @@ class IRISanitizerTest {
         "'https://example.org/a%20b', 'https://example.org/a%2520b'",
         "'https://user:pass@[2001:db8::1]:8080/δοκιμή', 'https://user:pass@[2001:db8::1]:8080/δοκιμή'"
     })
-    // spotless:on
     @DisplayName("Encode IRI components while preserving UCS characters")
     void buildValidIri_cases(String raw, String expected) {
         assertThat(IRISanitizer.buildValidIri(raw)).isEqualTo(expected);
@@ -53,7 +49,6 @@ class IRISanitizerTest {
     }
 
     @ParameterizedTest(name = "isValidUri(''{0}'') => {1}")
-    // spotless:off
     @CsvSource(
             value = {
                 "http://example.org/path, true",
@@ -79,14 +74,12 @@ class IRISanitizerTest {
                 "'http://example.org/path%Z', false"
             },
             nullValues = {"null"})
-    // spotless:on
     @DisplayName("Validate URI format with component-specific character checking")
     void isValidUri_cases(String iri, boolean expected) {
         assertThat(IRISanitizer.isValidUri(iri)).isEqualTo(expected);
     }
 
     @ParameterizedTest(name = "isValidIri(''{0}'') => {1}")
-    // spotless:off
     @CsvSource(
             value = {
                 "http://example.org/path, true",
@@ -102,7 +95,6 @@ class IRISanitizerTest {
                 "'', false"
             },
             nullValues = {"null"})
-    // spotless:on
     @DisplayName("Validate IRI format with Unicode-aware component checking")
     void isValidIri_cases(String iri, boolean expected) {
         assertThat(IRISanitizer.isValidIri(iri)).isEqualTo(expected);
