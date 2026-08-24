@@ -5,7 +5,7 @@ import io.gdcc.spi.export.dcat3.config.model.NodeTemplate;
 import io.gdcc.spi.export.dcat3.config.model.ResourceConfig;
 import io.gdcc.spi.export.dcat3.config.model.Subject;
 import io.gdcc.spi.export.dcat3.config.model.ValueSource;
-import io.gdcc.spi.export.dcat3.config.validate.IRIFixer;
+import io.gdcc.spi.export.dcat3.config.validate.IRISanitizer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -476,8 +476,8 @@ public class ResourceMapper {
         // Try to fix all characters
         // Maybe make this into an option ( or forcing into Uri)?
         // Note that we could have the whitespace percent encoded as well, but we don't.
-        if (!IRIFixer.isValidIri(iri)) { // prevent double encoding
-            iri = IRIFixer.buildValidIri(iri);
+        if (!IRISanitizer.isValidIri(iri)) { // prevent double encoding
+            iri = IRISanitizer.buildValidIri(iri);
         }
         return iri;
     }

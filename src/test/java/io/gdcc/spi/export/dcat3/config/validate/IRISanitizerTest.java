@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-class IRIFixerTest {
+class IRISanitizerTest {
 
     @ParameterizedTest(name = "buildValidUri(''{0}'') => ''{1}''")
     // spotless:off
@@ -22,7 +22,7 @@ class IRIFixerTest {
     // spotless:on
     @DisplayName("Encode URI/IRI components using RFC 3986 safe characters")
     void buildValidUri_cases(String raw, String expected) {
-        assertThat(IRIFixer.buildValidUri(raw)).isEqualTo(expected);
+        assertThat(IRISanitizer.buildValidUri(raw)).isEqualTo(expected);
     }
 
     @ParameterizedTest(name = "buildValidIri(''{0}'') => ''{1}''")
@@ -37,7 +37,7 @@ class IRIFixerTest {
     // spotless:on
     @DisplayName("Encode IRI components while preserving UCS characters")
     void buildValidIri_cases(String raw, String expected) {
-        assertThat(IRIFixer.buildValidIri(raw)).isEqualTo(expected);
+        assertThat(IRISanitizer.buildValidIri(raw)).isEqualTo(expected);
     }
 
     @ParameterizedTest(name = "query and fragment keep '/' and '?' in ''{0}''")
@@ -47,7 +47,7 @@ class IRIFixerTest {
     })
     @DisplayName("Apply query/fragment encoding rules")
     void buildValidUri_queryAndFragmentCases(String raw, String expected) {
-        assertThat(IRIFixer.buildValidUri(raw)).isEqualTo(expected);
+        assertThat(IRISanitizer.buildValidUri(raw)).isEqualTo(expected);
     }
 
     @ParameterizedTest(name = "isValidUri(''{0}'') => {1}")
@@ -80,7 +80,7 @@ class IRIFixerTest {
     // spotless:on
     @DisplayName("Validate URI format with component-specific character checking")
     void isValidUri_cases(String iri, boolean expected) {
-        assertThat(IRIFixer.isValidUri(iri)).isEqualTo(expected);
+        assertThat(IRISanitizer.isValidUri(iri)).isEqualTo(expected);
     }
 
     @ParameterizedTest(name = "isValidIri(''{0}'') => {1}")
@@ -103,7 +103,7 @@ class IRIFixerTest {
     // spotless:on
     @DisplayName("Validate IRI format with Unicode-aware component checking")
     void isValidIri_cases(String iri, boolean expected) {
-        assertThat(IRIFixer.isValidIri(iri)).isEqualTo(expected);
+        assertThat(IRISanitizer.isValidIri(iri)).isEqualTo(expected);
     }
 
     @ParameterizedTest(name = "Component illegal chars: path=''{0}'' => {1}")
@@ -119,7 +119,7 @@ class IRIFixerTest {
     @DisplayName("Validate path component with proper encoding")
     void componentPath_validation(String path, boolean shouldBeValid) {
         String uri = "http://example.org/" + path;
-        assertThat(IRIFixer.isValidUri(uri)).isEqualTo(shouldBeValid);
+        assertThat(IRISanitizer.isValidUri(uri)).isEqualTo(shouldBeValid);
     }
 
     @ParameterizedTest(name = "IRI path chars: path=''{0}'' => {1}")
@@ -132,7 +132,7 @@ class IRIFixerTest {
     @DisplayName("Validate IRI path component with Unicode support")
     void componentPath_iriValidation(String path, boolean shouldBeValid) {
         String iri = "http://example.org/" + path;
-        assertThat(IRIFixer.isValidIri(iri)).isEqualTo(shouldBeValid);
+        assertThat(IRISanitizer.isValidIri(iri)).isEqualTo(shouldBeValid);
     }
 
     @ParameterizedTest(name = "Component illegal chars: query=''{0}'' => {1}")
@@ -149,7 +149,7 @@ class IRIFixerTest {
     @DisplayName("Validate query component with proper encoding")
     void componentQuery_validation(String query, boolean shouldBeValid) {
         String uri = "http://example.org/path?" + query;
-        assertThat(IRIFixer.isValidUri(uri)).isEqualTo(shouldBeValid);
+        assertThat(IRISanitizer.isValidUri(uri)).isEqualTo(shouldBeValid);
     }
 
     @ParameterizedTest(name = "IRI query chars: query=''{0}'' => {1}")
@@ -162,7 +162,7 @@ class IRIFixerTest {
     @DisplayName("Validate IRI query component with Unicode support")
     void componentQuery_iriValidation(String query, boolean shouldBeValid) {
         String iri = "http://example.org/path?" + query;
-        assertThat(IRIFixer.isValidIri(iri)).isEqualTo(shouldBeValid);
+        assertThat(IRISanitizer.isValidIri(iri)).isEqualTo(shouldBeValid);
     }
 
     @ParameterizedTest(name = "Component illegal chars: fragment=''{0}'' => {1}")
@@ -179,7 +179,7 @@ class IRIFixerTest {
     @DisplayName("Validate fragment component with proper encoding")
     void componentFragment_validation(String fragment, boolean shouldBeValid) {
         String uri = "http://example.org/path#" + fragment;
-        assertThat(IRIFixer.isValidUri(uri)).isEqualTo(shouldBeValid);
+        assertThat(IRISanitizer.isValidUri(uri)).isEqualTo(shouldBeValid);
     }
 
     @ParameterizedTest(name = "IRI fragment chars: fragment=''{0}'' => {1}")
@@ -192,6 +192,6 @@ class IRIFixerTest {
     @DisplayName("Validate IRI fragment component with Unicode support")
     void componentFragment_iriValidation(String fragment, boolean shouldBeValid) {
         String iri = "http://example.org/path#" + fragment;
-        assertThat(IRIFixer.isValidIri(iri)).isEqualTo(shouldBeValid);
+        assertThat(IRISanitizer.isValidIri(iri)).isEqualTo(shouldBeValid);
     }
 }
