@@ -2,7 +2,7 @@ package io.gdcc.spi.export.dcat3.config.validate;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.*;
 
-public class IRIFixer {
+public class IRISanitizer {
     /**
      * RFC 3986 Appendix B splitter.
      *
