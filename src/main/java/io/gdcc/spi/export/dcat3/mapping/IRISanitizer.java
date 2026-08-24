@@ -1,4 +1,4 @@
-package io.gdcc.spi.export.dcat3.config.validate;
+package io.gdcc.spi.export.dcat3.mapping;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.*;
 

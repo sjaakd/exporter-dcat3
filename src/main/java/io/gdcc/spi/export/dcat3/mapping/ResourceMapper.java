@@ -5,7 +5,6 @@ import io.gdcc.spi.export.dcat3.config.model.NodeTemplate;
 import io.gdcc.spi.export.dcat3.config.model.ResourceConfig;
 import io.gdcc.spi.export.dcat3.config.model.Subject;
 import io.gdcc.spi.export.dcat3.config.model.ValueSource;
-import io.gdcc.spi.export.dcat3.config.validate.IRISanitizer;
 
 import java.util.ArrayList;
 import java.util.Collections;
