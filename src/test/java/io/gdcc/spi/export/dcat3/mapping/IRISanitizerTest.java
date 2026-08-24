@@ -6,9 +6,24 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import io.gdcc.spi.export.dcat3.mapping.IRISanitizer;
 
 class IRISanitizerTest {
+
+    @ParameterizedTest(name = "sanitize(''{0}'') => ''{1}''")
+    @CsvSource({
+        "'http://with three  whitespaces', 'http://with_three_whitespaces'",
+        "'http://example.org/simple', 'http://example.org/simple'",
+        "'https://example.org/a path?q=x y#z z', 'https://example.org/a_path?q=x_y#z_z'",
+        "'https://example.org/café', 'https://example.org/café'",
+        "'https://example.org/a%20 b', 'https://example.org/a%20_b'",
+        "'https://user:pass@[2001:db8::1]:8080/p', 'https://user:pass@[2001:db8::1]:8080/p'",
+        "'urn:uuid:550e8400-e29b-41d4-a716-446655440000', 'urn:uuid:550e8400-e29b-41d4-a716-446655440000'",
+        "'', ''"
+    })
+    @DisplayName("Sanitize IRIs by replacing spaces with underscores")
+    void sanitize_cases(String raw, String expected) {
+        assertThat(IRISanitizer.sanitize(raw)).isEqualTo(expected);
+    }
 
     @ParameterizedTest(name = "buildValidUri(''{0}'') => ''{1}''")
     @CsvSource({
@@ -17,12 +32,12 @@ class IRISanitizerTest {
         "'https://user:pass@[2001:db8::1]:8080/p', 'https://user:pass@[2001:db8::1]:8080/p'",
         "'urn:uuid:550e8400-e29b-41d4-a716-446655440000', 'urn:uuid:550e8400-e29b-41d4-a716-446655440000'",
         "'https://example.org/café', 'https://example.org/caf%C3%A9'",
-        "'https://example.org/a%20b', 'https://example.org/a%2520b'",
+        "'https://example.org/a%20b', 'https://example.org/a%20b'",
         "'', ''"
     })
     @DisplayName("Encode URI/IRI components using RFC 3986 safe characters")
     void buildValidUri_cases(String raw, String expected) {
-        assertThat(IRISanitizer.buildValidUri(raw)).isEqualTo(expected);
+        assertThat(IRISanitizer.toValidUri(raw)).isEqualTo(expected);
     }
 
     @ParameterizedTest(name = "buildValidIri(''{0}'') => ''{1}''")
@@ -30,12 +45,12 @@ class IRISanitizerTest {
         "'https://example.org/café', 'https://example.org/café'",
         "'https://example.org/東京?q=naïve#crème brûlée', 'https://example.org/東京?q=naïve#crème%20brûlée'",
         "'https://example.org/a path?q=x y#z z', 'https://example.org/a%20path?q=x%20y#z%20z'",
-        "'https://example.org/a%20b', 'https://example.org/a%2520b'",
+        "'https://example.org/a%20b', 'https://example.org/a%20b'",
         "'https://user:pass@[2001:db8::1]:8080/δοκιμή', 'https://user:pass@[2001:db8::1]:8080/δοκιμή'"
     })
     @DisplayName("Encode IRI components while preserving UCS characters")
     void buildValidIri_cases(String raw, String expected) {
-        assertThat(IRISanitizer.buildValidIri(raw)).isEqualTo(expected);
+        assertThat(IRISanitizer.toValidIri(raw)).isEqualTo(expected);
     }
 
     @ParameterizedTest(name = "query and fragment keep '/' and '?' in ''{0}''")
@@ -45,7 +60,7 @@ class IRISanitizerTest {
     })
     @DisplayName("Apply query/fragment encoding rules")
     void buildValidUri_queryAndFragmentCases(String raw, String expected) {
-        assertThat(IRISanitizer.buildValidUri(raw)).isEqualTo(expected);
+        assertThat(IRISanitizer.toValidUri(raw)).isEqualTo(expected);
     }
 
     @ParameterizedTest(name = "isValidUri(''{0}'') => {1}")

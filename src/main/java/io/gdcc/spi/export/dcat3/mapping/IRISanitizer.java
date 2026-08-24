@@ -1,9 +1,14 @@
 package io.gdcc.spi.export.dcat3.mapping;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.regex.*;
+import org.apache.jena.iri.IRI;
+import org.apache.jena.iri.IRIFactory;
 
 public class IRISanitizer {
-
+    private IRISanitizer() {}
+    
     public static String sanitize(String iri) {
         // Replace whitespace with underscores, takes care of most issues
         // Note that we could have the whitespace percent encoded as well, 
@@ -12,285 +17,184 @@ public class IRISanitizer {
 
         // Try to fix all characters if needed
         if (!IRISanitizer.isValidIri(iri)) { // prevent double encoding
-            iri = IRISanitizer.buildValidIri(iri);
+            iri = IRISanitizer.toValidIri(iri);
         }
         return iri;
     }
 
-    /**
-     * RFC 3986 Appendix B splitter.
-     *
-     * <p>Example for {@code https://user:pass@example.org:8443/catalog/dataset?id=42#section-2}:
-     *
-     * <ul>
-     *   <li>scheme = {@code https}</li>
-     *   <li>authority = {@code user:pass@example.org:8443}</li>
-     *   <li>path = {@code /catalog/dataset}</li>
-     *   <li>query = {@code id=42}</li>
-     *   <li>fragment = {@code section-2}</li>
-     * </ul>
-     *
-     * <p>The capturing groups used in this class are:
-     *
-     * <ul>
-     *   <li>group 2 = scheme</li>
-     *   <li>group 4 = authority</li>
-     *   <li>group 5 = path</li>
-     *   <li>group 7 = query</li>
-     *   <li>group 9 = fragment</li>
-     * </ul>
-     */
-    private static final Pattern SPLIT = Pattern.compile(
-            "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
 
-    public static String buildValidUri(String raw) {
-        Matcher m = SPLIT.matcher(raw);
-        if (!m.matches()) {
-            return raw;
-        }
+    private static final String SAFE_AUTH = "-._~!$&'()*+,;=:@[]";
+    private static final String SAFE_PATH = "-._~!$&'()*+,;=:@/";
+    private static final String SAFE_QUERY_FRAGMENT = "-._~!$&'()*+,;=:@/?";
 
-        String scheme    = m.group(2);
-        String authority = m.group(4);
-        String path      = m.group(5);
-        String query     = m.group(7);
-        String fragment  = m.group(9);
+    private static final IRIFactory IRI_FACTORY = IRIFactory.iriImplementation();
 
-        StringBuilder sb = new StringBuilder();
-        if (scheme != null)    sb.append(scheme).append(":");
-        if (authority != null) sb.append("//").append(encodeAuthority(authority));
-        if (path != null)      sb.append(encodePath(path));
-        if (query != null)     sb.append("?").append(encodeQueryOrFragment(query));
-        if (fragment != null)  sb.append("#").append(encodeQueryOrFragment(fragment));
+    public static String toValidIri(String raw) {
+        if (raw == null) return null;
+        Components c = split(raw);
 
-        return sb.toString();
-    }
-
-    public static String buildValidIri(String raw) {
-        Matcher m = SPLIT.matcher(raw);
-        if (!m.matches()) {
-            return raw;
-        }
-
-        String scheme    = m.group(2);
-        String authority = m.group(4);
-        String path      = m.group(5);
-        String query     = m.group(7);
-        String fragment  = m.group(9);
-
-        StringBuilder sb = new StringBuilder();
-        if (scheme != null)    sb.append(scheme).append(":");
-        if (authority != null) sb.append("//").append(encodeIriAuthority(authority));
-        if (path != null)      sb.append(encodeIriPath(path));
-        if (query != null)     sb.append("?").append(encodeIriQueryOrFragment(query));
-        if (fragment != null)  sb.append("#").append(encodeIriQueryOrFragment(fragment));
-
-        return sb.toString();
-    }
-
-    // --- IRI validation ---
-
-    /**
-     * Checks if the given string is a valid URI according to RFC 3986.
-     * A valid URI must have a scheme and be well-formed.
-     *
-     * @param uri the URI string to validate
-     * @return true if the URI is valid, false otherwise
-     */
-    public static boolean isValidUri(String uri) {
-        return isValidIdentifier(uri, false);
-    }
-
-    /**
-     * Checks if the given string is a valid IRI according to RFC 3987.
-     * A valid IRI must have a scheme and may contain legal Unicode code points
-     * in its authority, path, query, and fragment components.
-     *
-     * @param iri the IRI string to validate
-     * @return true if the IRI is valid, false otherwise
-     */
-    public static boolean isValidIri(String iri) {
-        return isValidIdentifier(iri, true);
-    }
-
-    private static boolean isValidIdentifier(String value, boolean allowIriChars) {
-        if (value == null || value.trim().isEmpty()) {
-            return false;
-        }
-
-        Matcher m = SPLIT.matcher(value);
-        if (!m.matches()) {
-            return false;
-        }
-
-        String scheme = m.group(2);
-        String authority = m.group(4);
-        String path = m.group(5);
-        String query = m.group(7);
-        String fragment = m.group(9);
-
-        // RFC 3986: A URI must have a scheme
-        if (scheme == null || scheme.isEmpty()) {
-            return false;
-        }
-
-        // Scheme must start with letter and contain only alphanumeric, +, -, .
-        if (!scheme.matches("^[a-zA-Z][a-zA-Z0-9+.-]*$")) {
-            return false;
-        }
-
-        // If authority is present, it must be non-empty
-        // If authority is absent, path must be non-empty or absolute
-        if (authority != null && authority.isEmpty()) {
-            return false;
-        }
-
-        // Path should be non-empty (for most URIs) or authority should be present
-        if ((path == null || path.isEmpty()) && authority == null) {
-            return false;
-        }
-
-        // Check for illegal characters in each component
-        if (hasIllegalCharactersInComponent(path, "-._~!$&'()*+,;=:@/", allowIriChars)) {
-            return false;
-        }
-        if (hasIllegalCharactersInComponent(query, "-._~!$&'()*+,;=:@/?", allowIriChars)) {
-            return false;
-        }
-        if (hasIllegalCharactersInComponent(fragment, "-._~!$&'()*+,;=:@/?", allowIriChars)) {
-            return false;
-        }
-        return !hasIllegalCharactersInComponent(authority, "-._~!$&'()*+,;=:@[]", allowIriChars);
-    }
-
-    /**
-     * Checks if a component contains illegal characters according to its allowed character set.
-     *
-     * @param component the component string to check
-     * @param extraSafeChars the extra allowed characters for this component (beyond alphanumeric)
-     * @param allowIriChars whether RFC 3987 Unicode characters are allowed in this component
-     * @return true if illegal characters are found, false otherwise
-     */
-    private static boolean hasIllegalCharactersInComponent(
-            String component, String extraSafeChars, boolean allowIriChars) {
-        if (component == null || component.isEmpty()) {
-            return false;
-        }
-
-        for (int i = 0; i < component.length(); i++) {
-            int cp = component.codePointAt(i);
-            int charCount = Character.charCount(cp);
-
-            // Check for percent-encoding: % must be followed by exactly two hex digits
-            if (cp == '%') {
-                // Need exactly 2 characters after %
-                if (i + 3 > component.length()) {
-                    return true; // Invalid percent-encoding (incomplete)
-                }
-                try {
-                    String hex = component.substring(i + 1, i + 3);
-                    // Verify both characters are valid hex digits
-                    Integer.parseInt(hex, 16);
-                    i += 2; // Skip the two hex digits
-                } catch (NumberFormatException e) {
-                    return true; // Invalid percent-encoding (not hex digits)
-                }
-            } else if (cp > 127) {
-                if (!allowIriChars || !isUcschar(cp)) {
-                    return true;
-                }
-                i += charCount - 1;
-            } else if (cp < 32 || cp == 127) {
-                // Control characters are illegal
-                return true;
-            } else if (!Character.isLetterOrDigit(cp) && extraSafeChars.indexOf(cp) < 0) {
-                // Character is not alphanumeric and not in the extra safe set
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // --- per-component encoders: allow that component's legal chars, encode the rest ---
-
-    private static String encodePath(String s)      { return pctEncode(s, "-._~!$&'()*+,;=:@/"); }
-    private static String encodeAuthority(String s)  { return pctEncode(s, "-._~!$&'()*+,;=:@[]"); }
-    private static String encodeQueryOrFragment(String s) { return pctEncode(s, "-._~!$&'()*+,;=:@/?"); }
-    
-    private static String encodeIriPath(String s) { return pctEncodeIriAware(s, "-._~!$&'()*+,;=:@/"); }
-    private static String encodeIriAuthority(String s) { return pctEncodeIriAware(s, "-._~!$&'()*+,;=:@[]"); }
-    private static String encodeIriQueryOrFragment(String s) { return pctEncodeIriAware(s, "-._~!$&'()*+,;=:@/?"); }
-
-    private static String pctEncode(String s, String extraSafe) {
         StringBuilder out = new StringBuilder();
-        byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
-        for (byte b : bytes) {
-            char c = (char) (b & 0xFF);
-            boolean isAscii = b >= 0; // single-byte ASCII range
-            boolean safe = isAscii && (Character.isLetterOrDigit(c) || extraSafe.indexOf(c) >= 0);
-            if (safe) {
-                out.append(c);
-            } else {
-                out.append('%').append(String.format("%02X", b & 0xFF));
-            }
-        }
+        if (c.scheme != null) out.append(c.scheme).append(':');
+        if (c.authority != null) out.append("//").append(encode(c.authority, SAFE_AUTH, true));
+        if (c.path != null) out.append(encode(c.path, SAFE_PATH, true));
+        if (c.query != null) out.append('?').append(encode(c.query, SAFE_QUERY_FRAGMENT, true));
+        if (c.fragment != null) out.append('#').append(encode(c.fragment, SAFE_QUERY_FRAGMENT, true));
         return out.toString();
     }
 
-    /**
-     * Checks if the given Unicode code point is a valid UCS character for use in IRIs.
-     *
-     * <p>RFC 3987 defines UCS characters as those Unicode code points that are safe to include
-     * directly in IRIs (International Resource Identifiers) without percent-encoding.
-     * This method validates membership in the allowed UCS character ranges:
-     *
-     * <ul>
-     *   <li>{@code U+00A0..U+D7FF}: Latin supplements, Greek, Cyrillic, CJK, etc.</li>
-     *   <li>{@code U+F900..U+FDCF}: CJK compatibility ideographs</li>
-     *   <li>{@code U+FDF0..U+FFEF}: Arabic presentation forms, half-width forms</li>
-     *   <li>{@code U+10000..U+EFFFD}: Supplementary Multilingual Plane and beyond (including emoji)</li>
-     * </ul>
-     *
-     * <p>Excluded ranges include:
-     *
-     * <ul>
-     *   <li>Control characters ({@code U+0000..U+001F}, {@code U+007F..U+009F})</li>
-     *   <li>Surrogates ({@code U+D800..U+DFFF})</li>
-     *   <li>Noncharacters</li>
-     * </ul>
-     *
-     * <p>Example: {@code café} contains the character {@code é} (U+00E9), which falls in the
-     * first range and is thus a valid UCS character that can appear unencoded in an IRI.
-     *
-     * @param codePoint the Unicode code point to test
-     * @return true if the code point is a valid UCS character, false otherwise
-     * @see <a href="https://tools.ietf.org/html/rfc3987">RFC 3987 - Internationalized Resource Identifiers (IRIs)</a>
-     */
-    private static boolean isUcschar(int codePoint) {
-        return (codePoint >= 0xA0 && codePoint <= 0xD7FF)
-                || (codePoint >= 0xF900 && codePoint <= 0xFDCF)
-                || (codePoint >= 0xFDF0 && codePoint <= 0xFFEF)
-                || (codePoint >= 0x10000 && codePoint <= 0xEFFFD); // simplified supplementary range
+    public static String toValidUri(String raw) {
+        if (raw == null) return null;
+        Components c = split(raw);
+
+        StringBuilder out = new StringBuilder();
+        if (c.scheme != null) out.append(c.scheme).append(':');
+        if (c.authority != null) out.append("//").append(encode(c.authority, SAFE_AUTH, false));
+        if (c.path != null) out.append(encode(c.path, SAFE_PATH, false));
+        if (c.query != null) out.append('?').append(encode(c.query, SAFE_QUERY_FRAGMENT, false));
+        if (c.fragment != null) out.append('#').append(encode(c.fragment, SAFE_QUERY_FRAGMENT, false));
+        return out.toString();
     }
 
-    private static String pctEncodeIriAware(String s, String asciiSafe) {
+    public static boolean isValidIri(String value) {
+        if (value == null || value.isBlank()) return false;
+        if (!hasScheme(value)) return false; // prevent scheme-less IRIs like "example.org/path" from being considered valid
+        if (!hasRequiredAuthorityForNetworkScheme(value)) return false;
+        IRI iri = IRI_FACTORY.create(value);
+        return !iri.hasViolation(false);
+    }
+
+    public static boolean isValidUri(String value) {
+        if (value == null || value.isBlank()) return false;
+        // URI validity as ASCII-only policy
+        String normalized = toValidUri(value);
+        return value.equals(normalized) && hasScheme(value) && hasRequiredAuthorityForNetworkScheme(value);
+    }
+
+    private static boolean hasScheme(String s) {
+        int i = s.indexOf(':');
+        if (i <= 0) return false;
+        String scheme = s.substring(0, i);
+        return scheme.matches("^[a-zA-Z][a-zA-Z0-9+.-]*$");
+    }
+
+    private static boolean hasRequiredAuthorityForNetworkScheme(String value) {
+        Components c = split(value);
+        if (c.scheme == null) return false;
+
+        String schemeLower = c.scheme.toLowerCase();
+        if (schemeLower.equals("http") || schemeLower.equals("https") || schemeLower.equals("ftp")) {
+            return c.authority != null && !c.authority.isBlank();
+        }
+        return true;
+    }
+
+    private static String encode(String s, String extraSafe, boolean allowUnicodeIriChars) {
         StringBuilder out = new StringBuilder();
         int i = 0;
         while (i < s.length()) {
             int cp = s.codePointAt(i);
             int charCount = Character.charCount(cp);
 
-            boolean safe = (cp < 128 && (Character.isLetterOrDigit(cp) || asciiSafe.indexOf(cp) >= 0))
-                    || isUcschar(cp);
+            // Preserve valid percent-encoded octets
+            if (cp == '%' && i + 2 < s.length() && isHex(s.charAt(i + 1)) && isHex(s.charAt(i + 2))) {
+                out.append('%').append(s.charAt(i + 1)).append(s.charAt(i + 2));
+                i += 3;
+                continue;
+            }
 
-            if (safe) {
+            boolean safeAscii = cp < 128 && (Character.isLetterOrDigit(cp) || extraSafe.indexOf(cp) >= 0);
+            boolean safeUnicode = allowUnicodeIriChars && isUcsChar(cp);
+
+            if (safeAscii || safeUnicode) {
                 out.appendCodePoint(cp);
             } else {
                 byte[] bytes = new String(Character.toChars(cp)).getBytes(StandardCharsets.UTF_8);
                 for (byte b : bytes) out.append('%').append(String.format("%02X", b & 0xFF));
             }
+
             i += charCount;
         }
         return out.toString();
     }
-}
 
+    private static boolean isHex(char c) {
+        return (c >= '0' && c <= '9')
+            || (c >= 'a' && c <= 'f')
+            || (c >= 'A' && c <= 'F');
+    }
+
+    private static boolean isUcsChar(int cp) {
+        return (cp >= 0xA0 && cp <= 0xD7FF)
+            || (cp >= 0xF900 && cp <= 0xFDCF)
+            || (cp >= 0xFDF0 && cp <= 0xFFEF)
+            || (cp >= 0x10000 && cp <= 0xEFFFD);
+    }
+
+    private static Components split(String raw) {
+        try {
+            URI u = new URI(raw);
+            if (u.isOpaque()) {
+                // e.g. urn:uuid:...
+                return new Components(u.getScheme(), null, u.getRawSchemeSpecificPart(), null, u.getRawFragment());
+            }
+            return new Components(u.getScheme(), u.getRawAuthority(), u.getRawPath(), u.getRawQuery(), u.getRawFragment());
+        } catch (URISyntaxException e) {
+            // Minimal fallback: still split reasonably to encode by component.
+            return Components.fallback(raw);
+        }
+    }
+
+    private static final class Components {
+        final String scheme;
+        final String authority;
+        final String path;
+        final String query;
+        final String fragment;
+
+        Components(String scheme, String authority, String path, String query, String fragment) {
+            this.scheme = scheme;
+            this.authority = authority;
+            this.path = path;
+            this.query = query;
+            this.fragment = fragment;
+        }
+
+        static Components fallback(String raw) {
+            String scheme = null, authority = null, path, query = null, fragment = null;
+            int colon = raw.indexOf(':');
+            String rest = raw;
+            if (colon > 0) {
+                scheme = raw.substring(0, colon);
+                rest = raw.substring(colon + 1);
+            }
+
+            int hash = rest.indexOf('#');
+            if (hash >= 0) {
+                fragment = rest.substring(hash + 1);
+                rest = rest.substring(0, hash);
+            }
+
+            int q = rest.indexOf('?');
+            if (q >= 0) {
+                query = rest.substring(q + 1);
+                rest = rest.substring(0, q);
+            }
+
+            if (rest.startsWith("//")) {
+                String tmp = rest.substring(2);
+                int slash = tmp.indexOf('/');
+                if (slash >= 0) {
+                    authority = tmp.substring(0, slash);
+                    path = tmp.substring(slash);
+                } else {
+                    authority = tmp;
+                    path = "";
+                }
+            } else {
+                path = rest;
+            }
+
+            return new Components(scheme, authority, path, query, fragment);
+        }
+    }
+}
