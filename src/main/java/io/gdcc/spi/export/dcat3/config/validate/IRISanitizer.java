@@ -3,6 +3,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.*;
 
 public class IRISanitizer {
+
+    public static String sanitize(String iri) {
+        // Replace whitespace with underscores, takes care of most issues
+        // Note that we could have the whitespace percent encoded as well, 
+        // but we don't because underscores are more readable
+        iri = iri.replaceAll("\\s+", "_");
+
+        // Try to fix all characters if needed
+        if (!IRISanitizer.isValidIri(iri)) { // prevent double encoding
+            iri = IRISanitizer.buildValidIri(iri);
+        }
+        return iri;
+    }
+
     /**
      * RFC 3986 Appendix B splitter.
      *
