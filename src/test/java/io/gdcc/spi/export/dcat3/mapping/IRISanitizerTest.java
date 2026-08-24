@@ -1,10 +1,12 @@
-package io.gdcc.spi.export.dcat3.config.validate;
+package io.gdcc.spi.export.dcat3.mapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import io.gdcc.spi.export.dcat3.mapping.IRISanitizer;
 
 class IRISanitizerTest {
 
