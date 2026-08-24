@@ -108,7 +108,7 @@ public class ResourceMapper {
                     s -> s == null ? "" : s.trim());
         }
 
-        return isBlank(iri) ? model.createResource() : model.createResource(sanitizeIri(iri));
+        return isBlank(iri) ? model.createResource() : model.createResource(IRISanitizer.sanitize(iri));
     }
 
     private void addProperty(Model model, Resource subject, JaywayJsonFinder finder, ValueSource valueSource) {
@@ -132,7 +132,7 @@ public class ResourceMapper {
                     .map(ResourceMapper::trimToNull)
                     .filter(Objects::nonNull)
                     .filter(ResourceMapper::looksLikeIri)
-                    .map(this::sanitizeIri)
+                    .map(IRISanitizer::sanitize)
                     .map(model::createResource)
                     .collect(Collectors.toList());
             default -> resolveLiteralValues(model, finder, valueSource);
@@ -290,7 +290,7 @@ public class ResourceMapper {
             return null;
         }
 
-        Resource resource = model.createResource(sanitizeIri(iri));
+        Resource resource = model.createResource(IRISanitizer.sanitize(iri));
 
         // Attach nested properties (if any)
         emitNestedProps(model, finder, nodeTemplate, resource);
@@ -467,19 +467,6 @@ public class ResourceMapper {
     private static boolean looksLikeIri(String s) {
         // quick absolute IRI check (scheme ":" ...)
         return s != null && s.matches("^[a-zA-Z][a-zA-Z0-9+.-]*:.*");
-    }
-
-    private String sanitizeIri(String iri) {
-        // Replace whitespace with underscores, takes care of most issues
-        iri = iri.replaceAll("\\s+", "_");
-
-        // Try to fix all characters
-        // Maybe make this into an option ( or forcing into Uri)?
-        // Note that we could have the whitespace percent encoded as well, but we don't.
-        if (!IRISanitizer.isValidIri(iri)) { // prevent double encoding
-            iri = IRISanitizer.buildValidIri(iri);
-        }
-        return iri;
     }
  
     private List<RDFNode> resolveLiteralValues(Model model, JaywayJsonFinder finder, ValueSource valueSource) {
