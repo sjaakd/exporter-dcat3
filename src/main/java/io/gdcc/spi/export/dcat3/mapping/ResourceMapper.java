@@ -30,21 +30,15 @@ public class ResourceMapper {
     private final ResourceConfig resourceConfig;
     private final Prefixes prefixes;
     private final String resourceTypeCurieOrIri;
-    private final boolean encodeInvalidIris;
 
-    public ResourceMapper(ResourceConfig resourceConfig, Prefixes prefixes, String resourceTypeCurieOrIri) {
-        this(resourceConfig, prefixes, resourceTypeCurieOrIri, true);
-    }
 
     public ResourceMapper(
             ResourceConfig resourceConfig,
             Prefixes prefixes,
-            String resourceTypeCurieOrIri,
-            boolean encodeInvalidIris) {
+            String resourceTypeCurieOrIri) {
         this.resourceConfig = resourceConfig;
         this.prefixes = prefixes;
         this.resourceTypeCurieOrIri = resourceTypeCurieOrIri;
-        this.encodeInvalidIris = encodeInvalidIris;
     }
     
     public Model build(JaywayJsonFinder finder) {
@@ -482,7 +476,7 @@ public class ResourceMapper {
         // Try to fix all characters
         // Maybe make this into an option ( or forcing into Uri)?
         // Note that we could have the whitespace percent encoded as well, but we don't.
-        if (encodeInvalidIris && !IRIFixer.isValidIri(iri)) { // prevent double encoding
+        if (!IRIFixer.isValidIri(iri)) { // prevent double encoding
             iri = IRIFixer.buildValidIri(iri);
         }
         return iri;
