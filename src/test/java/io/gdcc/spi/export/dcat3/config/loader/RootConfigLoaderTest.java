@@ -58,7 +58,6 @@ public class RootConfigLoaderTest {
 
         // Assert: root-level settings
         assertThat(rootConfig.trace()).isTrue();
-        assertThat(rootConfig.encodeInvalidIris()).isFalse();
         assertThat(rootConfig.prefixes())
                 .containsEntry("dcat", "http://www.w3.org/ns/dcat#")
                 .containsEntry("dct", "http://purl.org/dc/terms/");
@@ -368,7 +367,6 @@ public class RootConfigLoaderTest {
                 rootFile,
                 """
             dcat.trace.enabled = false
-            dcat.iri.encodeInvalidChars = true
             element.catalog.id = catalog
             element.catalog.type = dcat:Catalog
             element.catalog.file = dcat-catalog.properties
@@ -378,29 +376,8 @@ public class RootConfigLoaderTest {
         System.setProperty(RootConfigLoader.SYS_PROP, rootFile.toString());
 
         RootConfig rootConfig = RootConfigLoader.load();
-
-        assertThat(rootConfig.encodeInvalidIris()).isTrue();
     }
 
-    @Test
-    void encode_invalid_iris_defaults_to_false_when_absent() throws Exception {
-        Path rootFile = temp.resolve("dcat-root-default-encode-invalid-iris.properties");
-        Files.writeString(
-                rootFile,
-                """
-            dcat.trace.enabled = false
-            element.catalog.id = catalog
-            element.catalog.type = dcat:Catalog
-            element.catalog.file = dcat-catalog.properties
-            """);
-        Files.writeString(temp.resolve("dcat-catalog.properties"), "subject.iri.const = https://example.org/cat");
-
-        System.setProperty(RootConfigLoader.SYS_PROP, rootFile.toString());
-
-        RootConfig rootConfig = RootConfigLoader.load();
-
-        assertThat(rootConfig.encodeInvalidIris()).isFalse();
-    }
 
     // --- helpers ---
 
