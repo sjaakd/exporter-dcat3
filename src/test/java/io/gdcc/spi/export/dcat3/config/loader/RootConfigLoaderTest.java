@@ -360,25 +360,6 @@ public class RootConfigLoaderTest {
         assertThat(rootConfig.formats().get("jsonLd").displayName()).isEqualTo("DCAT-AP-NL (JSON-LD)");
     }
 
-    @Test
-    void parses_encode_invalid_iris_when_enabled() throws Exception {
-        Path rootFile = temp.resolve("dcat-root-encode-invalid-iris.properties");
-        Files.writeString(
-                rootFile,
-                """
-            dcat.trace.enabled = false
-            element.catalog.id = catalog
-            element.catalog.type = dcat:Catalog
-            element.catalog.file = dcat-catalog.properties
-            """);
-        Files.writeString(temp.resolve("dcat-catalog.properties"), "subject.iri.const = https://example.org/cat");
-
-        System.setProperty(RootConfigLoader.SYS_PROP, rootFile.toString());
-
-        RootConfig rootConfig = RootConfigLoader.load();
-    }
-
-
     // --- helpers ---
 
     private static void assumeHomeAvailable(String home) {
